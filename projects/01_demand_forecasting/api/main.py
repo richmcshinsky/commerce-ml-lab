@@ -133,13 +133,40 @@ def _build_future_df(
     In production this would pull live prices / calendar data from a database.
     """
     assert _state.history is not None
-    sku_id = f"{item_id}_{store_id}"
+
+    # M5 IDs include a dataset suffix, e.g. "FOODS_1_001_CA_1_evaluation".
+    # Accept the user-facing form "FOODS_1_001" + "CA_1" and resolve the
+    # actual stored ID by prefix matching.
+    base_id = f"{item_id}_{store_id}"
+    all_ids = _state.history["id"].unique()
+
+    # 1. Exact match (works if data has no suffix)
+    if base_id in all_ids:
+        sku_id = base_id
+    else:
+        # 2. Prefix match — picks up _evaluation / _validation suffix variants
+        matches = [i for i in all_ids if i.startswith(base_id)]
+        if not matches:
+            # Show a few valid item_id examples by stripping the store+suffix
+            sample_items = []
+            for raw_id in all_ids[:5]:
+                # strip known suffixes: _evaluation, _validation
+                clean = str(raw_id)
+                for suffix in ("_evaluation", "_validation", f"_{store_id}"):
+                    if clean.endswith(suffix):
+                        clean = clean[: -len(suffix)]
+                sample_items.append(clean)
+            raise HTTPException(
+                status_code=404,
+                detail=(
+                    f"SKU '{base_id}' not found in training data for store '{store_id}'. "
+                    f"Pass only the item portion of the ID, e.g. 'FOODS_1_001'. "
+                    f"Sample valid item_ids: {', '.join(sample_items)}"
+                ),
+            )
+        sku_id = matches[0]  # prefer the first (usually _evaluation)
+
     sku_hist = _state.history[_state.history["id"] == sku_id]
-    if sku_hist.empty:
-        raise HTTPException(
-            status_code=404,
-            detail=f"SKU '{sku_id}' not found in training data.",
-        )
 
     last_date = pd.to_datetime(sku_hist["date"].max())
     last_price = float(sku_hist["sell_price"].iloc[-1]) if "sell_price" in sku_hist.columns else 0.0

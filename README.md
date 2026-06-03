@@ -17,8 +17,8 @@ inventory/business decision layers.
 | # | Project | Problem | Data | Status |
 |---|---------|---------|------|--------|
 | 01 | [Demand Forecasting](projects/01_demand_forecasting/) | Given sales history and supply chain lead times, when and how much should you reorder? | M5 (Walmart, Kaggle) | ✅ Complete — WMAPE 0.058, 19% vs seasonal naive; (s,S) policy per SKU |
-| 02 | [Returns Intelligence](projects/02_returns_intelligence/) | Return likelihood scoring, fraud/abuse detection, and exchange recommendations — three models, one data schema | Synthetic (generated) | 🔄 In progress |
-| 03 | [Checkout Intent & Uplift](projects/03_checkout_intent/) | Session behaviour predicts checkout probability; uplift modelling identifies who actually benefits from an intervention | Criteo Uplift v2 | 🔄 In progress |
+| 02 | [Returns Intelligence](projects/02_returns_intelligence/) | Return likelihood scoring, fraud/abuse detection, and exchange recommendations — three models, one data schema | Synthetic (generated) | ✅ Complete — LightGBM + graph features; cost-aware fraud threshold; heuristic exchange rules |
+| 03 | [Checkout Intent & Uplift](projects/03_checkout_intent/) | Session behaviour predicts checkout probability; uplift modelling identifies who actually benefits from an intervention | Criteo Uplift v2 | ✅ Complete — T/S-learner uplift; Qini evaluation; propensity-vs-uplift demonstration |
 
 ---
 
