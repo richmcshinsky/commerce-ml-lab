@@ -1,13 +1,14 @@
 """Pydantic request/response schemas for the forecasting API."""
 from __future__ import annotations
+
 from pydantic import BaseModel, Field
 
 
 class ForecastRequest(BaseModel):
     """Request body for the /forecast endpoint."""
 
-    store_id: str = Field(..., example="CA_1")
-    item_id: str = Field(..., example="HOBBIES_1_001")
+    store_id: str = Field(..., examples=["CA_1"])
+    item_id: str = Field(..., examples=["HOBBIES_1_001"])
     horizon_days: int = Field(default=28, ge=1, le=90, description="Forecast horizon in days")
 
 
@@ -31,11 +32,16 @@ class ForecastResponse(BaseModel):
 class ReorderRequest(BaseModel):
     """Request body for the /reorder endpoint."""
 
-    store_id: str
-    item_id: str
-    current_inventory: int = Field(..., ge=0)
-    lead_time_days: int = Field(..., ge=1)
-    service_level: float = Field(default=0.95, ge=0.5, le=0.999)
+    store_id: str = Field(..., examples=["CA_1"])
+    item_id: str = Field(..., examples=["HOBBIES_1_001"])
+    current_inventory: int = Field(..., ge=0, description="Current on-hand inventory (units)")
+    lead_time_days: int = Field(default=7, ge=1, description="Replenishment lead time in days")
+    service_level: float = Field(default=0.95, ge=0.5, le=0.999,
+                                 description="Target cycle-service level (e.g. 0.95)")
+    cost_overstock: float = Field(default=1.0, gt=0,
+                                  description="Per-unit overage cost (holding + disposal)")
+    cost_understock: float = Field(default=5.0, gt=0,
+                                   description="Per-unit underage cost (lost margin + goodwill)")
 
 
 class ReorderResponse(BaseModel):
