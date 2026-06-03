@@ -1,27 +1,40 @@
-.PHONY: install data data-m5 data-criteo lint format typecheck test ci \
+.PHONY: install install-pip data data-m5 data-criteo data-synthetic \
+        lint format typecheck test ci \
         train-forecast train-returns train-intent \
         serve-forecast serve-returns clean
+
+# ── Python — works with uv (preferred) or plain conda/pip ────────────────────
+# Override: PYTHON=/path/to/python make data-m5
+PYTHON ?= python
 
 # ── Setup ────────────────────────────────────────────────────────────────────
 
 install:
 	uv sync --all-extras
 
+# For conda/non-uv environments: pip install -e . then use make with PYTHON=python
+install-pip:
+	$(PYTHON) -m pip install -e ".[dev]" --quiet
+
 # ── Data ─────────────────────────────────────────────────────────────────────
+# PYTHONPATH=src makes commerce_ml importable without installing the package.
+# Requires: kaggle CLI available and ~/.kaggle/kaggle.json in place for M5.
+#   Install kaggle: pip install kaggle  (or: conda install -c conda-forge kaggle)
 
 data: data-m5 data-criteo
 
 data-m5:
-	@echo "Downloading M5 Forecasting dataset..."
-	python -m commerce_ml.data.loaders download-m5
+	@echo "Downloading M5 Forecasting dataset (requires Kaggle account + M5 terms accepted)..."
+	@echo "  If kaggle is not installed: pip install kaggle"
+	PYTHONPATH=src $(PYTHON) -m commerce_ml.data.loaders download-m5
 
 data-criteo:
 	@echo "Downloading Criteo Uplift dataset..."
-	python -m commerce_ml.data.loaders download-criteo
+	PYTHONPATH=src $(PYTHON) -m commerce_ml.data.loaders download-criteo
 
 data-synthetic:
 	@echo "Generating synthetic returns data..."
-	python -m commerce_ml.data.synthetic generate
+	PYTHONPATH=src $(PYTHON) -m commerce_ml.data.synthetic generate
 
 # ── Code quality ─────────────────────────────────────────────────────────────
 

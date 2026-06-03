@@ -8,8 +8,7 @@ Design decisions made in this repository, and the reasoning behind them.
 
 One monorepo rather than three independent projects. The shared infrastructure
 (`src/commerce_ml/`) — data loaders, feature engineering, metrics, plotting —
-is used by all three projects. A senior practitioner builds shared infrastructure
-and multiple consumers. Four disconnected notebooks is a different signal.
+is used by all three projects. 
 
 ## LightGBM as the primary model
 
