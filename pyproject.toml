@@ -79,7 +79,7 @@ disallow_incomplete_defs = true
 testpaths = ["tests", "projects"]
 python_files = ["test_*.py"]
 python_functions = ["test_*"]
-addopts = ["--tb=short", "-q"]
+addopts = ["--tb=short", "-q", "--import-mode=importlib"]
 
 [tool.coverage.run]
 source = ["src/commerce_ml"]
