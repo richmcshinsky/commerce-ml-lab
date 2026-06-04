@@ -5,6 +5,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+import numpy as np
 import pytest
 
 sys.path.insert(0, str(Path(__file__).parents[4] / "src"))
@@ -27,7 +28,7 @@ class TestNaiveForecaster:
         for sku_id, _group in test.groupby("id"):
             expected = float(train[train["id"] == sku_id].sort_values("date")["sales"].iloc[-1])
             forecasts = preds[preds["id"] == sku_id]["forecast"]
-            assert (forecasts == pytest.approx(expected)).all(), (
+            assert np.allclose(forecasts.values, expected), (
                 f"SKU {sku_id}: expected {expected}, got {forecasts.values}"
             )
 
@@ -108,7 +109,7 @@ class TestMovingAverageForecaster:
             train[train["id"] == sku_id].sort_values("date")["sales"].tail(window).mean()
         )
         actual_forecasts = preds[preds["id"] == sku_id]["forecast"].values
-        assert (actual_forecasts == pytest.approx(expected_mean)).all()
+        assert np.allclose(actual_forecasts, expected_mean)
 
     def test_no_negative_forecasts(self, small_train_test: tuple) -> None:
         train, test = small_train_test

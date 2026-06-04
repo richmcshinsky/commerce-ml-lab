@@ -152,6 +152,10 @@ def rmsse(
 
     n = len(train)
     m = seasonality
+    # Guard: if the training series is shorter than the seasonal period,
+    # fall back to a lag-1 naive denominator rather than raising a broadcast error.
+    if n <= m:
+        m = max(1, n - 1)
 
     mse_forecast = np.mean((actual - forecast) ** 2)
     mse_naive_train = np.mean((train[m:] - train[: n - m]) ** 2)

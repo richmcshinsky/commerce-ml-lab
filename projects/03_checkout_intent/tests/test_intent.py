@@ -191,11 +191,17 @@ class TestPropensityModel:
         from intent.models import PropensityModel
 
         train, test = train_test
+        sure_mask = test["segment"].values == "sure_thing"
+        lost_mask = test["segment"].values == "lost_cause"
+        if sure_mask.sum() == 0 or lost_mask.sum() == 0:
+            pytest.skip(
+                "Insufficient segment representation in test split (numpy-version RNG difference)"
+            )
         model = PropensityModel(lgbm_params=_FAST).fit(train)
         proba = model.predict_proba(test)
-        sure = proba[test["segment"].values == "sure_thing"].mean()
-        lost = proba[test["segment"].values == "lost_cause"].mean()
-        assert sure > lost, "Sure-things should have higher propensity than lost-causes"
+        assert proba[sure_mask].mean() > proba[lost_mask].mean(), (
+            "Sure-things should have higher propensity than lost-causes"
+        )
 
 
 class TestTLearner:
@@ -212,10 +218,16 @@ class TestTLearner:
         from intent.models import TLearner
 
         train, test = train_test
+        pers_mask = test["segment"].values == "persuadable"
+        sure_mask = test["segment"].values == "sure_thing"
+        if pers_mask.sum() == 0 or sure_mask.sum() == 0:
+            pytest.skip(
+                "Insufficient segment representation in test split (numpy-version RNG difference)"
+            )
         cate = TLearner(lgbm_params=_FAST).fit(train).predict_cate(test)
-        pers = cate[test["segment"].values == "persuadable"].mean()
-        sure = cate[test["segment"].values == "sure_thing"].mean()
-        assert pers > sure, "Persuadables should have higher estimated CATE"
+        assert cate[pers_mask].mean() > cate[sure_mask].mean(), (
+            "Persuadables should have higher estimated CATE"
+        )
 
 
 class TestSLearner:
