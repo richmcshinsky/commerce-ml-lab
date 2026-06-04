@@ -15,9 +15,14 @@ Implements business-relevant metrics beyond plain accuracy:
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 import pandas as pd
 from sklearn.metrics import auc, precision_recall_curve
+
+# np.trapz removed in NumPy 2.0; np.trapezoid is the replacement (added in 2.0).
+_trapz: Any = getattr(np, "trapezoid", None) or getattr(np, "trapz", None)
 
 
 def pr_auc(y_true: np.ndarray | pd.Series, y_score: np.ndarray | pd.Series) -> float:
@@ -199,7 +204,6 @@ def qini_coefficient(
     incremental = cumulative_treated - cumulative_control * (n_treated / max(n_control, 1))
     random_line = incremental.iloc[-1] * fraction_targeted
 
-    _trapz = getattr(np, "trapezoid", np.trapz)  # type: ignore[attr-defined]
     qini_area = float(_trapz(incremental, fraction_targeted))
     random_area = float(_trapz(random_line, fraction_targeted))
 
