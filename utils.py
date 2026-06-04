@@ -154,8 +154,3 @@ def score_return(
     return score, label, rec
 
 
-def sidebar_brand() -> None:
-    """Consistent sidebar branding across all pages."""
-    with st.sidebar:
-        st.divider()
-        st.caption("Richard McShinsky · [GitHub](https://github.com/richmcshinsky/commerce-ml-lab)")

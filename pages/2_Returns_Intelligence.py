@@ -8,14 +8,7 @@ import plotly.graph_objects as go
 import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).parents[1]))
-from utils import EXCHANGE_RULES, ROOT, load_returns_data, score_return, sidebar_brand
-
-st.set_page_config(
-    page_title="Returns Intelligence · Commerce ML Lab",
-    page_icon="🔁",
-    layout="wide",
-)
-sidebar_brand()
+from utils import EXCHANGE_RULES, ROOT, load_returns_data, score_return
 
 st.title("🔁 Returns Intelligence")
 st.markdown(

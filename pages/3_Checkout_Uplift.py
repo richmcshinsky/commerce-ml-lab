@@ -10,14 +10,7 @@ import plotly.graph_objects as go
 import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).parents[1]))
-from utils import ROOT, load_uplift_data, qini_coeff, qini_curve, sidebar_brand
-
-st.set_page_config(
-    page_title="Checkout Uplift · Commerce ML Lab",
-    page_icon="🎯",
-    layout="wide",
-)
-sidebar_brand()
+from utils import ROOT, load_uplift_data, qini_coeff, qini_curve
 
 st.title("🎯 Checkout Uplift Modelling")
 st.markdown(
