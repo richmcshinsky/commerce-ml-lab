@@ -44,31 +44,32 @@ explainable) + LightGBM ranker (LambdaRank) on top for fine-grained scoring.
 
 | Model | PR-AUC | Notes |
 |-------|-------:|-------|
-| Rules baseline (return_rate > 0.3) | ~0.14 | Prevalence = overall return rate |
-| **LightGBM** | **~0.55–0.70** | Isotonic calibration; risk-tier output |
+| Rules baseline (return_rate > 0.3) | 0.146 | Prevalence = overall return rate |
+| **LightGBM (calibrated)** | **0.581** | Isotonic calibration; risk-tier output |
 
 Risk tiers applied post-scoring: Low (< 10%), Medium (10–25%), High (> 25%).
 
 ### Fraud detection (20% held-out test set, ~2K returns)
 
-| Model | PR-AUC | Precision@50 | Notes |
-|-------|-------:|-------------:|-------|
-| Random baseline | ~0.03–0.04 | ~3–4% | Prevalence = fraud rate |
-| **LightGBM + graph features** | **~0.55–0.70** | **~40–60%** | Cost-aware threshold; SHAP reason codes |
+| Model | PR-AUC | Notes |
+|-------|-------:|-------|
+| Random baseline | 0.024 | Prevalence = fraud rate in test set |
+| **LightGBM + graph features** | **0.560** | 23× vs random; cost-aware threshold; SHAP reason codes |
 
 Graph features (shared_address_count, component_size) provide the primary
 signal for ring fraud — behavioural features alone cannot detect it.
 Operating threshold auto-selected at ~0.15–0.25 (vs. default 0.5) to minimise
 expected cost at FP_cost=5, FN_cost=50.
 
+Numbers from saved results (`random_state=42`, 20,000 customers). Run `make train-returns` to reproduce.
+
 ### Exchange recommendation
 
 | Metric | Value |
 |--------|-------|
 | Heuristic rule coverage | ~70% of reason codes |
-| Mean top-1 score | ~0.85 |
-
-Exact numbers vary with random seed; run `make train-returns` to reproduce.
+| Reasons covered instantly | `too_small`, `too_large`, `wrong_color`, `defective` |
+| ML ranker handles | `changed_mind`, `not_as_described` (ambiguous cases) |
 
 ---
 

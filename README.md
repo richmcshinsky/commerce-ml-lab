@@ -18,8 +18,8 @@ inventory/business decision layers.
 | # | Project | Problem | Data | Report | Status |
 |---|---------|---------|------|--------|--------|
 | 01 | [Demand Forecasting](projects/01_demand_forecasting/) | Given sales history and supply chain lead times, when and how much should you reorder? | M5 (Walmart, Kaggle) | [📓 report](projects/01_demand_forecasting/report.ipynb) | ✅ Complete — WMAPE 0.058, 19% vs seasonal naive; (s,S) policy per SKU |
-| 02 | [Returns Intelligence](projects/02_returns_intelligence/) | Return likelihood scoring, fraud/abuse detection, and exchange recommendations — three models, one data schema | Synthetic (generated) | [📓 report](projects/02_returns_intelligence/report.ipynb) | ✅ Complete — LightGBM + graph features; cost-aware fraud threshold; heuristic exchange rules |
-| 03 | [Checkout Intent & Uplift](projects/03_checkout_intent/) | Session behaviour predicts checkout probability; uplift modelling identifies who actually benefits from an intervention | Criteo Uplift v2 | [📓 report](projects/03_checkout_intent/report.ipynb) | ✅ Complete — T/S-learner uplift; Qini evaluation; propensity-vs-uplift demonstration |
+| 02 | [Returns Intelligence](projects/02_returns_intelligence/) | Return likelihood scoring, fraud/abuse detection, and exchange recommendations — three models, one data schema | Synthetic (generated) | [📓 report](projects/02_returns_intelligence/report.ipynb) | ✅ Complete — Fraud PR-AUC 0.560 (23× random); graph features detect rings; cost-aware threshold |
+| 03 | [Checkout Intent & Uplift](projects/03_checkout_intent/) | Session behaviour predicts checkout probability; uplift modelling identifies who actually benefits from an intervention | Criteo Uplift v2 | [📓 report](projects/03_checkout_intent/report.ipynb) | ✅ Complete — T/S-learner CATE; segment decomposition shows sure-things (15.9% propensity, +1.0% CATE) vs persuadables (+12.3% CATE) |
 
 ---
 

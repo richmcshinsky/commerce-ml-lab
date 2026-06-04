@@ -34,8 +34,8 @@ with col2:
     with st.container(border=True):
         st.markdown("#### 🔁 Returns Intelligence")
         ma, mb = st.columns(2)
-        ma.metric("Fraud Precision@50", "40–60%", help="Graph features detect address-sharing rings")
-        mb.metric("Rule coverage", "~70%", help="Returns resolved by heuristic layer, no ML needed")
+        ma.metric("Fraud PR-AUC", "0.560", help="23× random baseline (0.024) — graph features detect address-sharing rings")
+        mb.metric("Rule coverage", "~70%", help="Returns resolved by heuristic layer instantly, no ML needed")
         st.markdown(
             "Three models, one schema: fraud detection, return likelihood, and exchange recommendations. "
             "**Graph features** — shared addresses, payment hash rings — expose organised fraud "
@@ -46,12 +46,12 @@ with col3:
     with st.container(border=True):
         st.markdown("#### 🎯 Checkout Uplift")
         ma, mb = st.columns(2)
-        ma.metric("Targeting", "Uplift", help="T-learner Qini > propensity Qini at every budget level")
-        mb.metric("Method", "T/S-learner", help="CATE estimation — who you can influence, not who will convert")
+        ma.metric("Persuadable CATE", "+12.3%", help="True treatment effect for the persuadable segment — the right population to target")
+        mb.metric("Sure-thing CATE", "+1.0%", help="Sure-things have 15.9% propensity but near-zero CATE — propensity targets them, wasting budget")
         st.markdown(
             "Propensity models find who will convert. Uplift models find who you can **influence**. "
-            "T-learner CATE scores target persuadables and skip sure-things "
-            "who would convert regardless and just drain discount budget."
+            "Sure-things have the highest propensity (15.9%) but near-zero CATE (+1.0%) — "
+            "propensity targeting spends budget on conversions that would have happened anyway."
         )
 
 st.divider()
