@@ -51,11 +51,11 @@ class SyntheticConfig:
     random_state: int = 42
     categories: list[dict[str, Any]] = field(
         default_factory=lambda: [
-            {"name": "apparel",     "avg_price": 65,  "base_return_rate": 0.20},
-            {"name": "footwear",    "avg_price": 95,  "base_return_rate": 0.18},
+            {"name": "apparel", "avg_price": 65, "base_return_rate": 0.20},
+            {"name": "footwear", "avg_price": 95, "base_return_rate": 0.18},
             {"name": "electronics", "avg_price": 180, "base_return_rate": 0.10},
-            {"name": "home_decor",  "avg_price": 55,  "base_return_rate": 0.08},
-            {"name": "beauty",      "avg_price": 35,  "base_return_rate": 0.05},
+            {"name": "home_decor", "avg_price": 55, "base_return_rate": 0.08},
+            {"name": "beauty", "avg_price": 35, "base_return_rate": 0.05},
         ]
     )
 
@@ -101,8 +101,8 @@ def generate_returns_dataset(
     n = config.n_customers
 
     # ── Assign archetypes ─────────────────────────────────────────────────────
-    n_wardrobers  = int(n * config.wardrober_frac)
-    n_velocity    = int(n * config.velocity_frac)
+    n_wardrobers = int(n * config.wardrober_frac)
+    n_velocity = int(n * config.velocity_frac)
     n_ring_budget = int(n * config.ring_frac)
 
     # Randomise ring sizes between 3 and ring_size*2 so the network chart
@@ -114,43 +114,45 @@ def generate_returns_dataset(
         ring_sizes.append(sz)
         remaining -= sz
     n_ring_total = sum(ring_sizes)
-    n_normal     = n - n_wardrobers - n_velocity - n_ring_total
+    n_normal = n - n_wardrobers - n_velocity - n_ring_total
 
     archetypes: list[str] = (
-        ["normal"]    * n_normal
+        ["normal"] * n_normal
         + ["wardrober"] * n_wardrobers
-        + ["velocity"]  * n_velocity
-        + ["ring"]      * n_ring_total
+        + ["velocity"] * n_velocity
+        + ["ring"] * n_ring_total
     )
     rng.shuffle(archetypes)  # type: ignore[arg-type]
     customer_ids = [f"C{i:06d}" for i in range(n)]
 
     # ── Address / payment assignment ──────────────────────────────────────────
-    address_ids  = [f"A{i:06d}" for i in range(n)]
+    address_ids = [f"A{i:06d}" for i in range(n)]
     payment_hash = [f"P{i:06d}" for i in range(n)]
-    ring_idx     = [i for i, a in enumerate(archetypes) if a == "ring"]
+    ring_idx = [i for i, a in enumerate(archetypes) if a == "ring"]
     cursor = 0
     for ring_num, sz in enumerate(ring_sizes):
-        members = ring_idx[cursor: cursor + sz]
+        members = ring_idx[cursor : cursor + sz]
         cursor += sz
         shared_addr = f"RING_A{ring_num:04d}"
-        shared_pay  = f"RING_P{ring_num:04d}"
+        shared_pay = f"RING_P{ring_num:04d}"
         for m in members:
-            address_ids[m]  = shared_addr
+            address_ids[m] = shared_addr
             payment_hash[m] = shared_pay
 
-    customers = pd.DataFrame({
-        "customer_id":      customer_ids,
-        "address_id":       address_ids,
-        "payment_hash":     payment_hash,
-        "account_age_days": rng.integers(30, 3650, size=n).tolist(),
-        "archetype":        archetypes,
-    })
+    customers = pd.DataFrame(
+        {
+            "customer_id": customer_ids,
+            "address_id": address_ids,
+            "payment_hash": payment_hash,
+            "account_age_days": rng.integers(30, 3650, size=n).tolist(),
+            "archetype": archetypes,
+        }
+    )
 
     # ── Generate orders ───────────────────────────────────────────────────────
-    cat_names  = [c["name"] for c in config.categories]
+    cat_names = [c["name"] for c in config.categories]
     cat_prices = [c["avg_price"] for c in config.categories]
-    cat_rr     = [c["base_return_rate"] for c in config.categories]
+    cat_rr = [c["base_return_rate"] for c in config.categories]
     cat_weight = np.array([0.35, 0.20, 0.20, 0.15, 0.10])
     start_date = pd.Timestamp("2023-01-01")
     total_days = 730  # 2 years
@@ -158,14 +160,16 @@ def generate_returns_dataset(
     order_rows: list[dict] = []
     for i, cust_id in enumerate(customer_ids):
         arch = archetypes[i]
-        n_orders = max(1, int(rng.poisson(
-            lam=8.0 if arch == "velocity" else config.avg_orders_per_customer
-        )))
+        n_orders = max(
+            1, int(rng.poisson(lam=8.0 if arch == "velocity" else config.avg_orders_per_customer))
+        )
         for _ in range(n_orders):
             w = np.array([0.50, 0.35, 0.05, 0.05, 0.05]) if arch == "wardrober" else cat_weight
             cat_idx = int(rng.choice(len(cat_names), p=w / w.sum()))
-            cat     = cat_names[cat_idx]
-            price   = round(float(np.clip(rng.lognormal(np.log(cat_prices[cat_idx]), 0.3), 5, 999)), 2)
+            cat = cat_names[cat_idx]
+            price = round(
+                float(np.clip(rng.lognormal(np.log(cat_prices[cat_idx]), 0.3), 5, 999)), 2
+            )
 
             if arch == "velocity":
                 day_offset = int(rng.integers(0, 90))
@@ -173,7 +177,7 @@ def generate_returns_dataset(
                 day_offset = int(rng.integers(0, total_days))
             order_date = start_date + pd.Timedelta(days=day_offset)
 
-            channel  = str(rng.choice(["web", "mobile", "marketplace"], p=[0.55, 0.35, 0.10]))
+            channel = str(rng.choice(["web", "mobile", "marketplace"], p=[0.55, 0.35, 0.10]))
             quantity = int(rng.choice([1, 2, 3], p=[0.80, 0.15, 0.05]))
 
             base_rr = cat_rr[cat_idx]
@@ -186,17 +190,19 @@ def generate_returns_dataset(
             else:
                 return_prob = base_rr * float(rng.uniform(0.7, 1.3))
 
-            order_rows.append({
-                "customer_id":  cust_id,
-                "category":     cat,
-                "item_price":   price,
-                "quantity":     quantity,
-                "channel":      channel,
-                "order_date":   order_date,
-                "was_returned": bool(rng.random() < return_prob),
-                "_arch":        arch,
-                "_cat_idx":     cat_idx,
-            })
+            order_rows.append(
+                {
+                    "customer_id": cust_id,
+                    "category": cat,
+                    "item_price": price,
+                    "quantity": quantity,
+                    "channel": channel,
+                    "order_date": order_date,
+                    "was_returned": bool(rng.random() < return_prob),
+                    "_arch": arch,
+                    "_cat_idx": cat_idx,
+                }
+            )
 
     orders = pd.DataFrame(order_rows)
     orders.insert(0, "order_id", [f"O{i:07d}" for i in range(len(orders))])
@@ -212,9 +218,9 @@ def generate_returns_dataset(
         .agg(total_orders=("order_id", "count"), total_returns=("was_returned", "sum"))
         .reset_index()
     )
-    cust_stats["lifetime_return_rate"] = (
-        cust_stats["total_returns"] / cust_stats["total_orders"].clip(lower=1)
-    )
+    cust_stats["lifetime_return_rate"] = cust_stats["total_returns"] / cust_stats[
+        "total_orders"
+    ].clip(lower=1)
     customers = customers.merge(cust_stats, on="customer_id", how="left")
     customers[["total_orders", "total_returns"]] = (
         customers[["total_orders", "total_returns"]].fillna(0).astype(int)
@@ -223,20 +229,20 @@ def generate_returns_dataset(
 
     # ── Generate return events ────────────────────────────────────────────────
     reason_map = {
-        "apparel":     ["too_small", "too_large", "wrong_color", "changed_mind", "defective"],
-        "footwear":    ["too_small", "too_large", "defective", "changed_mind"],
+        "apparel": ["too_small", "too_large", "wrong_color", "changed_mind", "defective"],
+        "footwear": ["too_small", "too_large", "defective", "changed_mind"],
         "electronics": ["defective", "not_as_described", "changed_mind"],
-        "home_decor":  ["changed_mind", "not_as_described", "defective"],
-        "beauty":      ["changed_mind", "defective", "not_as_described"],
+        "home_decor": ["changed_mind", "not_as_described", "defective"],
+        "beauty": ["changed_mind", "defective", "not_as_described"],
     }
     returned = orders[orders["was_returned"]].copy()
     return_rows: list[dict] = []
 
     for _, row in returned.iterrows():
         arch = row["_arch"]
-        cat  = row["category"]
+        cat = row["category"]
         order_date = pd.to_datetime(row["order_date"])
-        price      = float(row["item_price"])
+        price = float(row["item_price"])
 
         if arch == "wardrober":
             days_to_return = int(rng.integers(15, 45))
@@ -247,7 +253,8 @@ def generate_returns_dataset(
 
         possible_reasons = reason_map.get(cat, ["changed_mind"])
         reason = str(
-            rng.choice(["changed_mind", "defective"]) if arch == "wardrober"
+            rng.choice(["changed_mind", "defective"])
+            if arch == "wardrober"
             else rng.choice(possible_reasons)
         )
 
@@ -266,16 +273,18 @@ def generate_returns_dataset(
         elif arch == "ring":
             is_fraud = bool(rng.random() < 0.50)
 
-        return_rows.append({
-            "order_id":           row["order_id"],
-            "customer_id":        row["customer_id"],
-            "return_date":        order_date + pd.Timedelta(days=days_to_return),
-            "days_to_return":     days_to_return,
-            "reason_code":        reason,
-            "condition":          condition,
-            "exchange_requested": bool(rng.random() < 0.25),
-            "is_fraud":           is_fraud,
-        })
+        return_rows.append(
+            {
+                "order_id": row["order_id"],
+                "customer_id": row["customer_id"],
+                "return_date": order_date + pd.Timedelta(days=days_to_return),
+                "days_to_return": days_to_return,
+                "reason_code": reason,
+                "condition": condition,
+                "exchange_requested": bool(rng.random() < 0.25),
+                "is_fraud": is_fraud,
+            }
+        )
 
     returns_df = pd.DataFrame(return_rows)
     returns_df.insert(0, "return_id", [f"R{i:07d}" for i in range(len(returns_df))])
@@ -284,6 +293,9 @@ def generate_returns_dataset(
     fraud_rate = float(returns_df["is_fraud"].mean()) if len(returns_df) else 0.0
     logger.info(
         "Generated %d customers, %d orders, %d returns (fraud=%.2f%%)",
-        len(customers), len(orders), len(returns_df), fraud_rate * 100,
+        len(customers),
+        len(orders),
+        len(returns_df),
+        fraud_rate * 100,
     )
     return customers, orders, returns_df

@@ -45,13 +45,12 @@ def get_data_dir() -> Path:
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     return DATA_DIR
 
+
 # Kaggle competition slug for M5
 _M5_COMPETITION = "m5-forecasting-accuracy"
 
 # Criteo uplift dataset public URL (no auth required)
-_CRITEO_URL = (
-    "https://go.criteo.net/criteo-research-uplift-v2.1.csv.gz"
-)
+_CRITEO_URL = "https://go.criteo.net/criteo-research-uplift-v2.1.csv.gz"
 
 
 # ── M5 ───────────────────────────────────────────────────────────────────────
@@ -131,9 +130,7 @@ def load_m5_sales(data_dir: Path = M5_DIR, subset_store: str | None = "CA_1") ->
     """
     sales_path = data_dir / "sales_train_evaluation.csv"
     if not sales_path.exists():
-        raise FileNotFoundError(
-            f"M5 data not found at {sales_path}. Run `make data-m5` first."
-        )
+        raise FileNotFoundError(f"M5 data not found at {sales_path}. Run `make data-m5` first.")
 
     df = pd.read_csv(sales_path)
 
@@ -341,17 +338,17 @@ def generate_criteo_like(
 
     # Plant segment-specific signal
     is_persuadable = segments == "persuadable"
-    is_sure_thing  = segments == "sure_thing"
-    is_lost_cause  = segments == "lost_cause"
-    is_sleeping    = segments == "sleeping_dog"
+    is_sure_thing = segments == "sure_thing"
+    is_lost_cause = segments == "lost_cause"
+    is_sleeping = segments == "sleeping_dog"
 
-    feat[is_sure_thing,  0] += 1.5   # high propensity signal
-    feat[is_sure_thing,  1] += 1.0
-    feat[is_persuadable, 4] += 1.5   # high treatment-response signal
+    feat[is_sure_thing, 0] += 1.5  # high propensity signal
+    feat[is_sure_thing, 1] += 1.0
+    feat[is_persuadable, 4] += 1.5  # high treatment-response signal
     feat[is_persuadable, 5] += 1.0
-    feat[is_lost_cause,  0] -= 1.5   # low propensity
-    feat[is_sleeping,    0] -= 0.5
-    feat[is_sleeping,    6] += 1.0   # sleeping-dog signal
+    feat[is_lost_cause, 0] -= 1.5  # low propensity
+    feat[is_sleeping, 0] -= 0.5
+    feat[is_sleeping, 6] += 1.0  # sleeping-dog signal
 
     feature_cols = [f"f{i}" for i in range(12)]
     df = pd.DataFrame(feat, columns=feature_cols)
@@ -370,26 +367,27 @@ def generate_criteo_like(
 
     # Treatment effect (CATE) by segment
     tau = np.zeros(n)
-    tau[is_persuadable] =  0.8 + 0.4 * feat[is_persuadable, 4]   # high positive uplift
-    tau[is_sure_thing]  =  0.05                                 # near-zero uplift
-    tau[is_lost_cause]  = -0.05                                 # near-zero (slightly neg)
-    tau[is_sleeping]    = -0.5 - 0.2 * feat[is_sleeping, 6]       # negative uplift (hurt by treatment)
+    tau[is_persuadable] = 0.8 + 0.4 * feat[is_persuadable, 4]  # high positive uplift
+    tau[is_sure_thing] = 0.05  # near-zero uplift
+    tau[is_lost_cause] = -0.05  # near-zero (slightly neg)
+    tau[is_sleeping] = -0.5 - 0.2 * feat[is_sleeping, 6]  # negative uplift (hurt by treatment)
 
-    p_control  = sigmoid(logit_base)
-    p_treated  = sigmoid(logit_base + tau)
+    p_control = sigmoid(logit_base)
+    p_treated = sigmoid(logit_base + tau)
 
     # Observed outcome
     p_observed = np.where(df["treatment"] == 1, p_treated, p_control)
     df["conversion"] = (rng.random(n) < p_observed).astype(int)
-    df["visit"]      = (df["conversion"] == 1) | (rng.random(n) < 0.15)
-    df["visit"]      = df["visit"].astype(int)
-    df["exposure"]   = 1  # everyone was exposed (RCT)
-    df["segment"]    = segments  # ground-truth for evaluation
+    df["visit"] = (df["conversion"] == 1) | (rng.random(n) < 0.15)
+    df["visit"] = df["visit"].astype(int)
+    df["exposure"] = 1  # everyone was exposed (RCT)
+    df["segment"] = segments  # ground-truth for evaluation
 
     logger.info(
         "Generated synthetic Criteo-like dataset: %d rows, "
         "treatment_rate=%.1f%%, conversion_rate=%.2f%%",
-        n, treatment_rate * 100,
+        n,
+        treatment_rate * 100,
         df["conversion"].mean() * 100,
     )
     return df
