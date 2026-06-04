@@ -366,14 +366,14 @@ def generate_criteo_like(
     intercept = float(np.log(base_conversion_rate / (1 - base_conversion_rate)))
 
     # Base logit (propensity driver)
-    logit_base = intercept + 0.6 * F[:, 0] + 0.4 * F[:, 1] + 0.2 * F[:, 2]
+    logit_base = intercept + 0.6 * feat[:, 0] + 0.4 * feat[:, 1] + 0.2 * feat[:, 2]
 
     # Treatment effect (CATE) by segment
     tau = np.zeros(n)
-    tau[is_persuadable] =  0.8 + 0.4 * F[is_persuadable, 4]   # high positive uplift
+    tau[is_persuadable] =  0.8 + 0.4 * feat[is_persuadable, 4]   # high positive uplift
     tau[is_sure_thing]  =  0.05                                 # near-zero uplift
     tau[is_lost_cause]  = -0.05                                 # near-zero (slightly neg)
-    tau[is_sleeping]    = -0.5 - 0.2 * F[is_sleeping, 6]       # negative uplift (hurt by treatment)
+    tau[is_sleeping]    = -0.5 - 0.2 * feat[is_sleeping, 6]       # negative uplift (hurt by treatment)
 
     p_control  = sigmoid(logit_base)
     p_treated  = sigmoid(logit_base + tau)
