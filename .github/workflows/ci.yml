@@ -36,5 +36,5 @@ jobs:
 
       - name: Run tests
         run: |
-          PYTHONPATH=src:projects/01_demand_forecasting/src:projects/02_returns_intelligence/src:projects/03_checkout_intent/src \
+          PYTHONPATH=projects/01_demand_forecasting/src:projects/02_returns_intelligence/src:projects/03_checkout_intent/src \
           uv run pytest tests/ projects/ -q --tb=short --ignore=projects/01_demand_forecasting/notebooks --ignore=projects/02_returns_intelligence/notebooks --ignore=projects/03_checkout_intent/notebooks
