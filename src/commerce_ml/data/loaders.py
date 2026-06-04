@@ -358,7 +358,7 @@ def generate_criteo_like(
 
     # Potential outcomes (logistic)
     def sigmoid(x: np.ndarray) -> np.ndarray:
-        return 1.0 / (1.0 + np.exp(-x))
+        return 1.0 / (1.0 + np.exp(-x))  # type: ignore[return-value]
 
     intercept = float(np.log(base_conversion_rate / (1 - base_conversion_rate)))
 
