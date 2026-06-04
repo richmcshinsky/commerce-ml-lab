@@ -155,7 +155,7 @@ def add_rolling_features(
             if group_col is not None:
                 rolled = (
                     df.groupby(group_col)[target_col]
-                    .transform(lambda s: s.shift(1).rolling(window, min_periods=1).agg(func))
+                    .transform(lambda s, w=window, f=func: s.shift(1).rolling(w, min_periods=1).agg(f))
                 )
             else:
                 rolled = df[target_col].shift(1).rolling(window, min_periods=1).agg(func)

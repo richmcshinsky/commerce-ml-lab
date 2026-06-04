@@ -16,8 +16,8 @@ References
 
 from __future__ import annotations
 
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass
-from typing import Callable, Iterator
 
 import pandas as pd
 
@@ -170,7 +170,7 @@ def run_backtest(
 
         forecasts = fit_predict_fn(train, test)
 
-        for idx, (_, row) in zip(split.test_idx, test.iterrows()):
+        for idx, (_, row) in zip(split.test_idx, test.iterrows(), strict=False):
             records.append({
                 "fold": split.fold,
                 "date": row[date_col],

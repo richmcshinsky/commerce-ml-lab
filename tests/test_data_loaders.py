@@ -14,7 +14,6 @@ import pytest
 
 from commerce_ml.data.loaders import DATA_DIR, get_data_dir
 
-
 class TestGetDataDir:
     def test_returns_path(self) -> None:
         d = get_data_dir()

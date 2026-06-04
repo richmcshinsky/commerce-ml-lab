@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/richmcshinsky/commerce-ml-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/richmcshinsky/commerce-ml-lab/actions/workflows/ci.yml)
 
-A focused ML portfolio covering the four problem areas at the intersection of
+A focused ML portfolio covering the three problem areas at the intersection of
 e-commerce operations and machine learning: demand forecasting, returns
 intelligence, and checkout intent optimisation.
 
@@ -14,11 +14,11 @@ inventory/business decision layers.
 
 ## Projects
 
-| # | Project | Problem | Data | Status |
-|---|---------|---------|------|--------|
-| 01 | [Demand Forecasting](projects/01_demand_forecasting/) | Given sales history and supply chain lead times, when and how much should you reorder? | M5 (Walmart, Kaggle) | ✅ Complete — WMAPE 0.058, 19% vs seasonal naive; (s,S) policy per SKU |
-| 02 | [Returns Intelligence](projects/02_returns_intelligence/) | Return likelihood scoring, fraud/abuse detection, and exchange recommendations — three models, one data schema | Synthetic (generated) | ✅ Complete — LightGBM + graph features; cost-aware fraud threshold; heuristic exchange rules |
-| 03 | [Checkout Intent & Uplift](projects/03_checkout_intent/) | Session behaviour predicts checkout probability; uplift modelling identifies who actually benefits from an intervention | Criteo Uplift v2 | ✅ Complete — T/S-learner uplift; Qini evaluation; propensity-vs-uplift demonstration |
+| # | Project | Problem | Data | Report | Status |
+|---|---------|---------|------|--------|--------|
+| 01 | [Demand Forecasting](projects/01_demand_forecasting/) | Given sales history and supply chain lead times, when and how much should you reorder? | M5 (Walmart, Kaggle) | [📓 report](projects/01_demand_forecasting/report.ipynb) | ✅ Complete — WMAPE 0.058, 19% vs seasonal naive; (s,S) policy per SKU |
+| 02 | [Returns Intelligence](projects/02_returns_intelligence/) | Return likelihood scoring, fraud/abuse detection, and exchange recommendations — three models, one data schema | Synthetic (generated) | [📓 report](projects/02_returns_intelligence/report.ipynb) | ✅ Complete — LightGBM + graph features; cost-aware fraud threshold; heuristic exchange rules |
+| 03 | [Checkout Intent & Uplift](projects/03_checkout_intent/) | Session behaviour predicts checkout probability; uplift modelling identifies who actually benefits from an intervention | Criteo Uplift v2 | [📓 report](projects/03_checkout_intent/report.ipynb) | ✅ Complete — T/S-learner uplift; Qini evaluation; propensity-vs-uplift demonstration |
 
 ---
 

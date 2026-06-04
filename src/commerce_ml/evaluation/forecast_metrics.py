@@ -151,7 +151,6 @@ def rmsse(
     forecast = np.asarray(forecast, dtype=float)
     train = np.asarray(train_actual, dtype=float)
 
-    h = len(actual)
     n = len(train)
     m = seasonality
 

@@ -26,13 +26,15 @@ jobs:
         run: uv sync --all-extras
 
       - name: Lint with ruff
-        run: uv run ruff check src/ tests/
+        run: uv run ruff check src/ projects/ tests/
 
       - name: Check formatting
-        run: uv run ruff format --check src/ tests/
+        run: uv run ruff format --check src/ projects/ tests/
 
       - name: Type check with mypy
         run: uv run mypy src/ --ignore-missing-imports
 
       - name: Run tests
-        run: uv run pytest tests/ -q --tb=short
+        run: |
+          PYTHONPATH=src:projects/01_demand_forecasting/src:projects/02_returns_intelligence/src:projects/03_checkout_intent/src \
+          uv run pytest tests/ projects/ -q --tb=short --ignore=projects/01_demand_forecasting/notebooks --ignore=projects/02_returns_intelligence/notebooks --ignore=projects/03_checkout_intent/notebooks

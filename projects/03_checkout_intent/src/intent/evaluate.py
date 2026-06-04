@@ -16,6 +16,10 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 
+# np.trapz removed in NumPy 2.0; np.trapezoid is the replacement (added in 2.0).
+# Use whichever is available.
+_trapz = getattr(np, "trapezoid", None) or getattr(np, "trapz")
+
 # qini_coefficient implemented locally below — avoids sklearn import at module level
 
 
@@ -50,7 +54,7 @@ def qini_coefficient(
         - (df["y"] * (1 - df["w"])).cumsum() * (n_treated / max(n_control, 1))
     )
     random_line = incremental.iloc[-1] * frac
-    return float(np.trapz(incremental.values, frac) - np.trapz(random_line, frac))
+    return float(_trapz(incremental.values, frac) - _trapz(random_line, frac))
 
 
 
@@ -126,8 +130,8 @@ def auuc(
         AUUC value. Positive means better than random targeting.
     """
     curve = qini_curve(y_true, treatment, uplift_score)
-    area_model  = float(np.trapz(curve["incremental_conversions"], curve["fraction_targeted"]))
-    area_random = float(np.trapz(curve["random_baseline"],          curve["fraction_targeted"]))
+    area_model  = float(_trapz(curve["incremental_conversions"], curve["fraction_targeted"]))
+    area_random = float(_trapz(curve["random_baseline"],          curve["fraction_targeted"]))
     return area_model - area_random
 
 
