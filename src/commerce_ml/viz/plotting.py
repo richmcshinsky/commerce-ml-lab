@@ -28,23 +28,25 @@ def apply_style() -> None:
         from commerce_ml.viz.plotting import apply_style
         apply_style()
     """
-    plt.rcParams.update({
-        "figure.figsize": FIGURE_SIZE,
-        "figure.dpi": 120,
-        "axes.spines.top": False,
-        "axes.spines.right": False,
-        "axes.prop_cycle": plt.cycler("color", PALETTE),
-        "axes.labelsize": 11,
-        "axes.titlesize": 13,
-        "axes.titlepad": 10,
-        "xtick.labelsize": 10,
-        "ytick.labelsize": 10,
-        "legend.fontsize": 10,
-        "legend.frameon": False,
-        "grid.alpha": 0.3,
-        "grid.linewidth": 0.5,
-        "font.family": "sans-serif",
-    })
+    plt.rcParams.update(
+        {
+            "figure.figsize": FIGURE_SIZE,
+            "figure.dpi": 120,
+            "axes.spines.top": False,
+            "axes.spines.right": False,
+            "axes.prop_cycle": plt.cycler("color", PALETTE),
+            "axes.labelsize": 11,
+            "axes.titlesize": 13,
+            "axes.titlepad": 10,
+            "xtick.labelsize": 10,
+            "ytick.labelsize": 10,
+            "legend.fontsize": 10,
+            "legend.frameon": False,
+            "grid.alpha": 0.3,
+            "grid.linewidth": 0.5,
+            "font.family": "sans-serif",
+        }
+    )
 
 
 # ── Forecasting plots ─────────────────────────────────────────────────────────
@@ -83,8 +85,14 @@ def plot_forecast(
     ax.plot(dates, actual, label="Actual", color="black", linewidth=1.5, alpha=0.8)
 
     for i, (name, values) in enumerate(forecasts.items()):
-        ax.plot(dates, values, label=name, color=PALETTE[i % len(PALETTE)],
-                linewidth=1.5, linestyle="--")
+        ax.plot(
+            dates,
+            values,
+            label=name,
+            color=PALETTE[i % len(PALETTE)],
+            linewidth=1.5,
+            linestyle="--",
+        )
 
     ax.set_title(title)
     ax.set_xlabel("Date")
@@ -208,12 +216,18 @@ def plot_qini_curve(
     if ax is None:
         _, ax = plt.subplots(figsize=FIGURE_SIZE_SQUARE)
 
-    ax.plot(fraction_targeted, incremental_conversions, label=label,
-            color=PALETTE[0], linewidth=2)
-    ax.plot(fraction_targeted, random_baseline, label="Random targeting",
-            color="#94A3B8", linewidth=1.5, linestyle="--")
-    ax.fill_between(fraction_targeted, random_baseline, incremental_conversions,
-                    alpha=0.1, color=PALETTE[0])
+    ax.plot(fraction_targeted, incremental_conversions, label=label, color=PALETTE[0], linewidth=2)
+    ax.plot(
+        fraction_targeted,
+        random_baseline,
+        label="Random targeting",
+        color="#94A3B8",
+        linewidth=1.5,
+        linestyle="--",
+    )
+    ax.fill_between(
+        fraction_targeted, random_baseline, incremental_conversions, alpha=0.1, color=PALETTE[0]
+    )
     ax.set_xlabel("Fraction of population targeted")
     ax.set_ylabel("Cumulative incremental conversions")
     ax.set_title("Qini Curve")

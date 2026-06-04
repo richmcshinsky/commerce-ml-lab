@@ -39,6 +39,7 @@ class TestWmape:
 
     def test_accepts_pandas_series(self) -> None:
         import pandas as pd
+
         actual = pd.Series([10.0, 20.0, 30.0])
         forecast = pd.Series([10.0, 20.0, 30.0])
         assert wmape(actual, forecast) == pytest.approx(0.0)

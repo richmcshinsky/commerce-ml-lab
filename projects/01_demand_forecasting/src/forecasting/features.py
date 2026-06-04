@@ -52,10 +52,14 @@ CAT_COLS_DEFAULT: list[str] = ["item_id", "dept_id", "cat_id", "store_id", "stat
 """Columns to encode as LightGBM categorical dtype (integer-coded)."""
 
 # Raw M5 string columns that must never reach the model feature matrix
-_M5_RAW_STRING_COLS: frozenset[str] = frozenset([
-    "event_name_1", "event_name_2", "event_type_2",  # replaced by has_event flag
-    "state_id",  # encoded as category; raw string version dropped
-])
+_M5_RAW_STRING_COLS: frozenset[str] = frozenset(
+    [
+        "event_name_1",
+        "event_name_2",
+        "event_type_2",  # replaced by has_event flag
+        "state_id",  # encoded as category; raw string version dropped
+    ]
+)
 
 
 # ── Calendar / Fourier features ───────────────────────────────────────────────
@@ -89,7 +93,7 @@ def add_calendar_features(
     df = df.copy()
     dates = pd.to_datetime(df[date_col])
 
-    df["day_of_week"] = dates.dt.dayofweek.astype("int16")       # 0=Mon, 6=Sun
+    df["day_of_week"] = dates.dt.dayofweek.astype("int16")  # 0=Mon, 6=Sun
     df["day_of_month"] = dates.dt.day.astype("int16")
     df["day_of_year"] = dates.dt.dayofyear.astype("int16")
     df["week_of_year"] = dates.dt.isocalendar().week.astype("int16")
@@ -143,9 +147,7 @@ def add_lag_features(
     """
     df = df.copy()
     for lag in lags:
-        df[f"{sales_col}_lag_{lag}"] = (
-            df.groupby(id_col, group_keys=False)[sales_col].shift(lag)
-        )
+        df[f"{sales_col}_lag_{lag}"] = df.groupby(id_col, group_keys=False)[sales_col].shift(lag)
     return df
 
 
@@ -198,27 +200,21 @@ def add_rolling_features(
             col_name = f"{sales_col}_roll_{w}_{func}"
 
             if func == "mean":
-                df[col_name] = (
-                    df.groupby(id_col)[sales_col].transform(
-                        lambda x, _w=w, _mp=min_periods, _s=shift: (  # noqa: B023
-                            x.shift(_s).rolling(_w, min_periods=_mp).mean()
-                        )
+                df[col_name] = df.groupby(id_col)[sales_col].transform(
+                    lambda x, _w=w, _mp=min_periods, _s=shift: (  # noqa: B023
+                        x.shift(_s).rolling(_w, min_periods=_mp).mean()
                     )
                 )
             elif func == "std":
-                df[col_name] = (
-                    df.groupby(id_col)[sales_col].transform(
-                        lambda x, _w=w, _mp=min_periods, _s=shift: (  # noqa: B023
-                            x.shift(_s).rolling(_w, min_periods=_mp).std()
-                        )
+                df[col_name] = df.groupby(id_col)[sales_col].transform(
+                    lambda x, _w=w, _mp=min_periods, _s=shift: (  # noqa: B023
+                        x.shift(_s).rolling(_w, min_periods=_mp).std()
                     )
                 )
             elif func == "max":
-                df[col_name] = (
-                    df.groupby(id_col)[sales_col].transform(
-                        lambda x, _w=w, _mp=min_periods, _s=shift: (  # noqa: B023
-                            x.shift(_s).rolling(_w, min_periods=_mp).max()
-                        )
+                df[col_name] = df.groupby(id_col)[sales_col].transform(
+                    lambda x, _w=w, _mp=min_periods, _s=shift: (  # noqa: B023
+                        x.shift(_s).rolling(_w, min_periods=_mp).max()
                     )
                 )
             else:
@@ -394,7 +390,9 @@ def build_lgbm_features(
 
     logger.info(
         "build_lgbm_features: %d input rows → %d output rows, %d columns.",
-        n_input, len(df), df.shape[1],
+        n_input,
+        len(df),
+        df.shape[1],
     )
     return df
 
@@ -433,10 +431,12 @@ def get_feature_columns(
         Ordered list of feature column names safe to pass to LightGBM.
     """
     always_exclude = {
-        sales_col, date_col, id_col,
-        "d",          # M5 day index string ("d_1" … "d_1941")
-        "wm_yr_wk",   # M5 week key used only for price joins
-        "_is_test",   # internal tag used during predict()
+        sales_col,
+        date_col,
+        id_col,
+        "d",  # M5 day index string ("d_1" … "d_1941")
+        "wm_yr_wk",  # M5 week key used only for price joins
+        "_is_test",  # internal tag used during predict()
     }
     if extra_exclude:
         always_exclude.update(extra_exclude)

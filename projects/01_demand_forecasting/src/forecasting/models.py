@@ -139,11 +139,7 @@ class NaiveForecaster(BaseForecaster):
         self
         """
         # Sort to ensure we pick the truly last observation
-        last_obs = (
-            train.sort_values([id_col, date_col])
-            .groupby(id_col)[sales_col]
-            .last()
-        )
+        last_obs = train.sort_values([id_col, date_col]).groupby(id_col)[sales_col].last()
         self.last_values_ = last_obs
         logger.info("NaiveForecaster fitted on %d series", len(last_obs))
         return self
@@ -170,12 +166,7 @@ class NaiveForecaster(BaseForecaster):
             raise RuntimeError("Call fit() before predict().")
 
         result = test.copy()
-        result["forecast"] = (
-            result[id_col]
-            .map(self.last_values_)
-            .clip(lower=0)
-            .astype(float)
-        )
+        result["forecast"] = result[id_col].map(self.last_values_).clip(lower=0).astype(float)
         return result
 
 
@@ -305,9 +296,7 @@ class SeasonalNaiveForecaster(BaseForecaster):
         test_dates = pd.to_datetime(test[date_col])
         last_dates = pd.to_datetime(test[id_col].map(last_train_date))
         gap_days = (test_dates - last_dates).dt.days.clip(lower=1)
-        lookback = (
-            np.ceil(gap_days.values / self.seasonality).astype(int) * self.seasonality
-        )
+        lookback = np.ceil(gap_days.values / self.seasonality).astype(int) * self.seasonality
         test["_lookup_date"] = test_dates - pd.to_timedelta(lookback, unit="D")
 
         result = test.merge(
@@ -398,12 +387,7 @@ class MovingAverageForecaster(BaseForecaster):
             raise RuntimeError("Call fit() before predict().")
 
         result = test.copy()
-        result["forecast"] = (
-            result[id_col]
-            .map(self._means)
-            .clip(lower=0)
-            .astype(float)
-        )
+        result["forecast"] = result[id_col].map(self._means).clip(lower=0).astype(float)
         return result
 
 
@@ -432,6 +416,7 @@ def evaluate_baselines(
     """
     import sys
     from pathlib import Path
+
     sys.path.insert(0, str(Path(__file__).parents[5] / "src"))
     from commerce_ml.evaluation.forecast_metrics import summarise_forecast_metrics
 

@@ -41,8 +41,12 @@ def main(quick: bool = False) -> None:
     RESULTS = _HERE.parent.parent / "results"
     RESULTS.mkdir(exist_ok=True)
 
-    fast_params = {"n_estimators": 20 if quick else 500, "verbose": -1,
-                   "random_state": 42, "n_jobs": -1}
+    fast_params = {
+        "n_estimators": 20 if quick else 500,
+        "verbose": -1,
+        "random_state": 42,
+        "n_jobs": -1,
+    }
     n_rows = 10_000 if quick else 200_000
 
     # ── Load data ─────────────────────────────────────────────────────────────
@@ -57,8 +61,12 @@ def main(quick: bool = False) -> None:
         df = generate_criteo_like(n_rows=n_rows, random_state=42)
         source = "Synthetic"
 
-    logger.info("  %d rows | treatment_rate=%.1f%% | conversion_rate=%.2f%%",
-                len(df), df["treatment"].mean()*100, df["conversion"].mean()*100)
+    logger.info(
+        "  %d rows | treatment_rate=%.1f%% | conversion_rate=%.2f%%",
+        len(df),
+        df["treatment"].mean() * 100,
+        df["conversion"].mean() * 100,
+    )
 
     df.to_parquet(RESULTS / "uplift_data.parquet", index=False)
 
@@ -97,17 +105,34 @@ def main(quick: bool = False) -> None:
     s_model.save(RESULTS / "s_learner.pkl")
 
     # ── Metrics ───────────────────────────────────────────────────────────────
-    metrics = pd.DataFrame([
-        {"model": "Propensity", "qini": round(prop_qini, 4),
-         "uplift_at_20pct": round(uplift_at_k(y, w, prop_scores, k=0.20), 4),
-         "incremental_conv_at_20pct": round(incremental_conversions_at_k(y, w, prop_scores, 0.20), 1)},
-        {"model": "T-learner",  "qini": round(t_qini, 4),
-         "uplift_at_20pct": round(t_u20, 4),
-         "incremental_conv_at_20pct": round(incremental_conversions_at_k(y, w, t_scores, 0.20), 1)},
-        {"model": "S-learner",  "qini": round(s_qini, 4),
-         "uplift_at_20pct": round(s_u20, 4),
-         "incremental_conv_at_20pct": round(incremental_conversions_at_k(y, w, s_scores, 0.20), 1)},
-    ])
+    metrics = pd.DataFrame(
+        [
+            {
+                "model": "Propensity",
+                "qini": round(prop_qini, 4),
+                "uplift_at_20pct": round(uplift_at_k(y, w, prop_scores, k=0.20), 4),
+                "incremental_conv_at_20pct": round(
+                    incremental_conversions_at_k(y, w, prop_scores, 0.20), 1
+                ),
+            },
+            {
+                "model": "T-learner",
+                "qini": round(t_qini, 4),
+                "uplift_at_20pct": round(t_u20, 4),
+                "incremental_conv_at_20pct": round(
+                    incremental_conversions_at_k(y, w, t_scores, 0.20), 1
+                ),
+            },
+            {
+                "model": "S-learner",
+                "qini": round(s_qini, 4),
+                "uplift_at_20pct": round(s_u20, 4),
+                "incremental_conv_at_20pct": round(
+                    incremental_conversions_at_k(y, w, s_scores, 0.20), 1
+                ),
+            },
+        ]
+    )
     metrics.to_csv(RESULTS / "intent_metrics.csv", index=False)
 
     print("\n" + "=" * 58)

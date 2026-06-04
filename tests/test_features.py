@@ -21,17 +21,23 @@ class TestCalendarFeatures:
         df = pd.DataFrame({"date": pd.date_range("2023-01-01", periods=10, freq="D")})
         result = add_calendar_features(df)
         expected_cols = [
-            "day_of_week", "day_of_month", "day_of_year",
-            "week_of_year", "month", "quarter", "year", "is_weekend",
+            "day_of_week",
+            "day_of_month",
+            "day_of_year",
+            "week_of_year",
+            "month",
+            "quarter",
+            "year",
+            "is_weekend",
         ]
         for col in expected_cols:
             assert col in result.columns, f"Missing column: {col}"
 
     def test_is_weekend_correct(self) -> None:
         # 2023-01-07 is a Saturday, 2023-01-08 is a Sunday
-        df = pd.DataFrame({
-            "date": pd.to_datetime(["2023-01-06", "2023-01-07", "2023-01-08", "2023-01-09"])
-        })
+        df = pd.DataFrame(
+            {"date": pd.to_datetime(["2023-01-06", "2023-01-07", "2023-01-08", "2023-01-09"])}
+        )
         result = add_calendar_features(df)
         assert result["is_weekend"].tolist() == [0, 1, 1, 0]
 
@@ -47,10 +53,12 @@ class TestCalendarFeatures:
         assert not any("fourier" in c for c in result.columns)
 
     def test_original_columns_preserved(self) -> None:
-        df = pd.DataFrame({
-            "date": pd.date_range("2023-01-01", periods=5, freq="D"),
-            "sales": [1.0, 2.0, 3.0, 4.0, 5.0],
-        })
+        df = pd.DataFrame(
+            {
+                "date": pd.date_range("2023-01-01", periods=5, freq="D"),
+                "sales": [1.0, 2.0, 3.0, 4.0, 5.0],
+            }
+        )
         result = add_calendar_features(df)
         assert "date" in result.columns
         assert "sales" in result.columns
@@ -74,10 +82,12 @@ class TestLagFeatures:
 
     def test_group_lag_does_not_leak_across_groups(self) -> None:
         """Lag for group B should not see group A's values."""
-        df = pd.DataFrame({
-            "sku": ["A", "A", "A", "B", "B", "B"],
-            "sales": [10.0, 20.0, 30.0, 100.0, 200.0, 300.0],
-        })
+        df = pd.DataFrame(
+            {
+                "sku": ["A", "A", "A", "B", "B", "B"],
+                "sales": [10.0, 20.0, 30.0, 100.0, 200.0, 300.0],
+            }
+        )
         result = add_lag_features(df, "sales", lags=[1], group_col="sku")
         # First value of group B should be NaN (not 30 from group A)
         group_b = result[result["sku"] == "B"].reset_index(drop=True)
@@ -105,10 +115,12 @@ class TestRollingFeatures:
         assert result["sales_roll_2_mean"].iloc[2] == pytest.approx(15.0)
 
     def test_group_rolling_does_not_leak(self) -> None:
-        df = pd.DataFrame({
-            "sku": ["A", "A", "A", "B", "B", "B"],
-            "sales": [10.0, 20.0, 30.0, 100.0, 200.0, 300.0],
-        })
+        df = pd.DataFrame(
+            {
+                "sku": ["A", "A", "A", "B", "B", "B"],
+                "sales": [10.0, 20.0, 30.0, 100.0, 200.0, 300.0],
+            }
+        )
         result = add_rolling_features(df, "sales", windows=[2], group_col="sku", agg_funcs=["mean"])
         group_b_mean = result[result["sku"] == "B"]["sales_roll_2_mean"]
         # No value from group B should exceed 200 (since max(B) is 300, rolling(2) of
@@ -118,19 +130,28 @@ class TestRollingFeatures:
 
 class TestSessionFeatures:
     def _make_events(self) -> pd.DataFrame:
-        return pd.DataFrame({
-            "session_id": ["s1", "s1", "s1", "s1", "s2", "s2"],
-            "event_type": [
-                "page_view", "add_to_cart", "page_view", "purchase",
-                "page_view", "page_view",
-            ],
-            "timestamp": [
-                "2023-01-01 10:00", "2023-01-01 10:05",
-                "2023-01-01 10:10", "2023-01-01 10:20",
-                "2023-01-01 11:00", "2023-01-01 11:15",
-            ],
-            "price": [50.0, 50.0, 30.0, 50.0, 20.0, 40.0],
-        })
+        return pd.DataFrame(
+            {
+                "session_id": ["s1", "s1", "s1", "s1", "s2", "s2"],
+                "event_type": [
+                    "page_view",
+                    "add_to_cart",
+                    "page_view",
+                    "purchase",
+                    "page_view",
+                    "page_view",
+                ],
+                "timestamp": [
+                    "2023-01-01 10:00",
+                    "2023-01-01 10:05",
+                    "2023-01-01 10:10",
+                    "2023-01-01 10:20",
+                    "2023-01-01 11:00",
+                    "2023-01-01 11:15",
+                ],
+                "price": [50.0, 50.0, 30.0, 50.0, 20.0, 40.0],
+            }
+        )
 
     def test_one_row_per_session(self) -> None:
         events = self._make_events()

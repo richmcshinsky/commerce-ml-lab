@@ -105,9 +105,14 @@ def load_m5_long(
     # Join calendar
     calendar = load_m5_calendar(data_dir=data_dir)
     cal_cols = [
-        "d", "date", "wm_yr_wk",
-        "event_name_1", "event_type_1",
-        "snap_CA", "snap_TX", "snap_WI",
+        "d",
+        "date",
+        "wm_yr_wk",
+        "event_name_1",
+        "event_type_1",
+        "snap_CA",
+        "snap_TX",
+        "snap_WI",
     ]
     df = df.merge(calendar[cal_cols], on="d", how="left")
     df["date"] = pd.to_datetime(df["date"])
@@ -171,8 +176,12 @@ def train_test_split(
 
     logger.info(
         "Train: %s -> %s (%d rows)  |  Test: %s -> %s (%d rows)",
-        train[date_col].min().date(), train[date_col].max().date(), len(train),
-        test[date_col].min().date(), test[date_col].max().date(), len(test),
+        train[date_col].min().date(),
+        train[date_col].max().date(),
+        len(train),
+        test[date_col].min().date(),
+        test[date_col].max().date(),
+        len(test),
     )
     return train, test
 
@@ -219,12 +228,7 @@ def aggregate_by_date(
         Columns: ``date``, (group_col if given), ``sales``.
     """
     keys = [date_col] if group_col is None else [date_col, group_col]
-    return (
-        df.groupby(keys)[sales_col]
-        .sum()
-        .reset_index()
-        .sort_values(date_col)
-    )
+    return df.groupby(keys)[sales_col].sum().reset_index().sort_values(date_col)
 
 
 def make_series_pivot(
@@ -282,9 +286,5 @@ def get_active_items(
     list[str]
         Item IDs meeting the activity threshold.
     """
-    counts = (
-        df[df[sales_col] > 0]
-        .groupby(id_col)[sales_col]
-        .count()
-    )
+    counts = df[df[sales_col] > 0].groupby(id_col)[sales_col].count()
     return list(counts[counts >= min_nonzero_days].index)

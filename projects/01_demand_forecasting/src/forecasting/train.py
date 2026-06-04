@@ -63,7 +63,9 @@ def main() -> None:
     train, test = train_test_split(df, test_days=TEST_DAYS)
     logger.info(
         "Train: %d rows (%d SKUs), Test: %d rows.",
-        len(train), train["id"].nunique(), len(test),
+        len(train),
+        train["id"].nunique(),
+        len(test),
     )
 
     # ── Baselines ─────────────────────────────────────────────────────────────
@@ -82,6 +84,7 @@ def main() -> None:
 
     # Aggregate to store level for scalar metrics
     import sys
+
     sys.path.insert(0, str(_REPO_SRC))
     from commerce_ml.evaluation.forecast_metrics import summarise_forecast_metrics
 
@@ -91,6 +94,7 @@ def main() -> None:
 
     # Use seasonal naive as the MASE reference
     from forecasting.models import SeasonalNaiveForecaster
+
     sn = SeasonalNaiveForecaster(seasonality=7).fit(train)
     sn_agg = sn.predict(test).groupby("date")["forecast"].sum().values
 

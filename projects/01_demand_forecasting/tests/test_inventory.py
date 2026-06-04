@@ -81,27 +81,37 @@ class TestStdFromInterval:
 class TestNewsvendorQuantity:
     def test_symmetric_cost_equals_mean(self) -> None:
         """With equal costs, the optimal quantity is the mean demand."""
-        q = newsvendor_quantity(mean_demand=100, std_demand=20, cost_overstock=1.0, cost_understock=1.0)
+        q = newsvendor_quantity(
+            mean_demand=100, std_demand=20, cost_overstock=1.0, cost_understock=1.0
+        )
         assert q == pytest.approx(100.0, abs=1e-6)
 
     def test_high_understock_cost_above_mean(self) -> None:
         """High stockout penalty pushes Q above the mean."""
-        q = newsvendor_quantity(mean_demand=100, std_demand=20, cost_overstock=1.0, cost_understock=9.0)
+        q = newsvendor_quantity(
+            mean_demand=100, std_demand=20, cost_overstock=1.0, cost_understock=9.0
+        )
         assert q > 100.0
 
     def test_high_overstock_cost_below_mean(self) -> None:
         """High holding cost pushes Q below the mean."""
-        q = newsvendor_quantity(mean_demand=100, std_demand=20, cost_overstock=9.0, cost_understock=1.0)
+        q = newsvendor_quantity(
+            mean_demand=100, std_demand=20, cost_overstock=9.0, cost_understock=1.0
+        )
         assert q < 100.0
 
     def test_zero_std_returns_mean(self) -> None:
         """With no uncertainty, the optimal Q is the mean (clipped to ≥ 0)."""
-        q = newsvendor_quantity(mean_demand=50, std_demand=0, cost_overstock=1.0, cost_understock=4.0)
+        q = newsvendor_quantity(
+            mean_demand=50, std_demand=0, cost_overstock=1.0, cost_understock=4.0
+        )
         assert q == pytest.approx(50.0, abs=1e-4)
 
     def test_non_negative_result(self) -> None:
         """Q* should never be negative even with extreme parameters."""
-        q = newsvendor_quantity(mean_demand=0, std_demand=0, cost_overstock=100, cost_understock=1.0)
+        q = newsvendor_quantity(
+            mean_demand=0, std_demand=0, cost_overstock=100, cost_understock=1.0
+        )
         assert q >= 0.0
 
     def test_invalid_cost_raises(self) -> None:
@@ -238,7 +248,11 @@ class TestComputePolicyCosts:
     def test_total_cost_equals_sum_of_components(self, constant_demand: np.ndarray) -> None:
         sim = simulate_inventory(constant_demand, policy_s=30, policy_S=80, lead_time_days=3)
         costs = compute_policy_costs(sim)
-        expected = costs["total_holding_cost"] + costs["total_stockout_cost"] + costs["total_ordering_cost"]
+        expected = (
+            costs["total_holding_cost"]
+            + costs["total_stockout_cost"]
+            + costs["total_ordering_cost"]
+        )
         assert costs["total_cost"] == pytest.approx(expected, abs=0.01)
 
     def test_cycle_service_level_in_unit_interval(self, constant_demand: np.ndarray) -> None:
@@ -252,8 +266,9 @@ class TestComputePolicyCosts:
 
 class TestServiceLevelFrontier:
     def test_safety_stock_monotone_in_service_level(self) -> None:
-        df = service_level_frontier(mean_demand_per_period=5.0, std_demand_per_period=2.0,
-                                    lead_time_periods=7)
+        df = service_level_frontier(
+            mean_demand_per_period=5.0, std_demand_per_period=2.0, lead_time_periods=7
+        )
         assert df["safety_stock"].is_monotonic_increasing
 
     def test_custom_service_levels(self) -> None:

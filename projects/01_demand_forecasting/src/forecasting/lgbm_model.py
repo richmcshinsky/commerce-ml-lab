@@ -218,7 +218,9 @@ class LGBMForecaster(BaseForecaster):
         )
 
         # Build training features
-        logger.info("Building training features (%d rows, %d SKUs)…", len(train), train[id_col].nunique())
+        logger.info(
+            "Building training features (%d rows, %d SKUs)…", len(train), train[id_col].nunique()
+        )
         feat_df = self._build_features(train, drop_na_rows=True)
 
         self.feature_cols_ = get_feature_columns(
@@ -234,7 +236,9 @@ class LGBMForecaster(BaseForecaster):
 
         logger.info(
             "Training on %d rows × %d features (%d categorical)…",
-            len(X), len(self.feature_cols_), len(cat_feature_names),
+            len(X),
+            len(self.feature_cols_),
+            len(cat_feature_names),
         )
 
         fit_kwargs: dict[str, Any] = {}
@@ -311,10 +315,15 @@ class LGBMForecaster(BaseForecaster):
         all_dates = sorted(pd.to_datetime(test_sorted[date_col]).unique())
 
         n_batches = -(-len(all_dates) // batch_size)  # ceiling division
-        logger.info("Recursive prediction: %d dates in %d batches of %d.", len(all_dates), n_batches, batch_size)
+        logger.info(
+            "Recursive prediction: %d dates in %d batches of %d.",
+            len(all_dates),
+            n_batches,
+            batch_size,
+        )
 
         for batch_idx in range(0, len(all_dates), batch_size):
-            batch_dates = all_dates[batch_idx: batch_idx + batch_size]
+            batch_dates = all_dates[batch_idx : batch_idx + batch_size]
             date_mask = pd.to_datetime(test_sorted[date_col]).isin(batch_dates)
             batch_rows = test_sorted[date_mask].copy()
 
@@ -347,8 +356,11 @@ class LGBMForecaster(BaseForecaster):
             # Update working history: append this batch with point forecasts as sales.
             # Future batches' lag features will reference these predictions instead of NaN.
             history_update = batch_rows.drop(
-                columns=[c for c in ["forecast", "lower_80", "upper_80", "_is_test"]
-                         if c in batch_rows.columns],
+                columns=[
+                    c
+                    for c in ["forecast", "lower_80", "upper_80", "_is_test"]
+                    if c in batch_rows.columns
+                ],
                 errors="ignore",
             ).copy()
             history_update[self._sales_col] = point
@@ -432,9 +444,12 @@ class LGBMForecaster(BaseForecaster):
             raise RuntimeError("Call fit() before get_feature_importance().")
 
         importances = self.model_.booster_.feature_importance(importance_type=importance_type)
-        df = pd.DataFrame(
-            {"feature": self.feature_cols_, "importance": importances}
-        ).sort_values("importance", ascending=False).head(top_n).reset_index(drop=True)
+        df = (
+            pd.DataFrame({"feature": self.feature_cols_, "importance": importances})
+            .sort_values("importance", ascending=False)
+            .head(top_n)
+            .reset_index(drop=True)
+        )
         return df
 
     # ── Persistence ───────────────────────────────────────────────────────────

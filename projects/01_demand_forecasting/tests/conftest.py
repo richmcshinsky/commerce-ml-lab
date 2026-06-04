@@ -4,6 +4,7 @@ Provides a synthetic M5-like dataset so tests run without downloading
 the real M5 data. The synthetic data has the same schema as the real
 dataset and follows similar statistical properties.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -35,13 +36,29 @@ def synthetic_m5_long() -> pd.DataFrame:
     dates = pd.date_range(start_date, periods=n_days, freq="D")
 
     # Define SKUs
-    categories = ["FOODS_1", "FOODS_2", "HOBBIES_1", "HOBBIES_2",
-                  "HOUSEHOLD_1", "HOUSEHOLD_2", "FOODS_3", "FOODS_4",
-                  "HOBBIES_3", "HOUSEHOLD_3"]
+    categories = [
+        "FOODS_1",
+        "FOODS_2",
+        "HOBBIES_1",
+        "HOBBIES_2",
+        "HOUSEHOLD_1",
+        "HOUSEHOLD_2",
+        "FOODS_3",
+        "FOODS_4",
+        "HOBBIES_3",
+        "HOUSEHOLD_3",
+    ]
     cat_map = {
-        "FOODS_1": "FOODS", "FOODS_2": "FOODS", "FOODS_3": "FOODS", "FOODS_4": "FOODS",
-        "HOBBIES_1": "HOBBIES", "HOBBIES_2": "HOBBIES", "HOBBIES_3": "HOBBIES",
-        "HOUSEHOLD_1": "HOUSEHOLD", "HOUSEHOLD_2": "HOUSEHOLD", "HOUSEHOLD_3": "HOUSEHOLD",
+        "FOODS_1": "FOODS",
+        "FOODS_2": "FOODS",
+        "FOODS_3": "FOODS",
+        "FOODS_4": "FOODS",
+        "HOBBIES_1": "HOBBIES",
+        "HOBBIES_2": "HOBBIES",
+        "HOBBIES_3": "HOBBIES",
+        "HOUSEHOLD_1": "HOUSEHOLD",
+        "HOUSEHOLD_2": "HOUSEHOLD",
+        "HOUSEHOLD_3": "HOUSEHOLD",
     }
     price_by_cat = {"FOODS": 5.0, "HOBBIES": 15.0, "HOUSEHOLD": 10.0}
 
@@ -61,24 +78,26 @@ def synthetic_m5_long() -> pd.DataFrame:
             if rng.random() < 0.45:  # inject zeros for ~60% overall zero rate
                 sales = 0
 
-            rows.append({
-                "id": f"{item_id}_CA_1",
-                "item_id": item_id,
-                "dept_id": item_id,
-                "cat_id": cat,
-                "store_id": "CA_1",
-                "state_id": "CA",
-                "d": f"d_{d + 1}",
-                "date": date,
-                "sales": sales,
-                "sell_price": round(price, 2),
-                "event_name_1": None,
-                "event_type_1": None,
-                "snap_CA": int(rng.random() < 0.14),  # SNAP ~14% of days
-                "snap_TX": 0,
-                "snap_WI": 0,
-                "wm_yr_wk": int(date.strftime("%Y%V")),
-            })
+            rows.append(
+                {
+                    "id": f"{item_id}_CA_1",
+                    "item_id": item_id,
+                    "dept_id": item_id,
+                    "cat_id": cat,
+                    "store_id": "CA_1",
+                    "state_id": "CA",
+                    "d": f"d_{d + 1}",
+                    "date": date,
+                    "sales": sales,
+                    "sell_price": round(price, 2),
+                    "event_name_1": None,
+                    "event_type_1": None,
+                    "snap_CA": int(rng.random() < 0.14),  # SNAP ~14% of days
+                    "snap_TX": 0,
+                    "snap_WI": 0,
+                    "wm_yr_wk": int(date.strftime("%Y%V")),
+                }
+            )
 
     return pd.DataFrame(rows)
 
@@ -88,6 +107,8 @@ def small_train_test(synthetic_m5_long: pd.DataFrame) -> tuple[pd.DataFrame, pd.
     """Return train/test split of the synthetic data (28-day test window)."""
     import sys
     from pathlib import Path
+
     sys.path.insert(0, str(Path(__file__).parents[4] / "src"))
     from forecasting.data import train_test_split
+
     return train_test_split(synthetic_m5_long, test_days=28)

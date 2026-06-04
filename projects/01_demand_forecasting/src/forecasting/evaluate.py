@@ -1,4 +1,5 @@
 """Walk-forward evaluation for demand forecasting models."""
+
 from __future__ import annotations
 
 from commerce_ml.evaluation.backtest import run_backtest

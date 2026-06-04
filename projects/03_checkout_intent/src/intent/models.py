@@ -18,6 +18,7 @@ Three models, increasing sophistication:
    Pros: uses all data; can regularise the treatment effect.
    Cons: treatment effect may be under-regularised / swamped by main effects.
 """
+
 from __future__ import annotations
 
 import logging
@@ -63,6 +64,7 @@ def _make_lgbm(objective: str = "binary", **overrides: Any) -> Any:
 
 
 # ── Propensity model ──────────────────────────────────────────────────────────
+
 
 class PropensityModel:
     """Standard binary classifier: P(convert | X).
@@ -141,6 +143,7 @@ class PropensityModel:
 
 # ── T-learner ─────────────────────────────────────────────────────────────────
 
+
 class TLearner:
     """Two-model uplift estimator.
 
@@ -205,7 +208,8 @@ class TLearner:
 
         logger.info(
             "TLearner trained: %d treated, %d control rows.",
-            len(treated), len(control),
+            len(treated),
+            len(control),
         )
         return self
 
@@ -242,6 +246,7 @@ class TLearner:
 
 
 # ── S-learner ─────────────────────────────────────────────────────────────────
+
 
 class SLearner:
     """Single-model uplift estimator with treatment as a feature.
@@ -333,10 +338,7 @@ class SLearner:
         df0 = add_treatment_interactions(df0, self.feature_cols, treatment_col)
         X0 = df0.reindex(columns=self._all_feat, fill_value=0)
 
-        return (
-            self.model_.predict_proba(X1)[:, 1]
-            - self.model_.predict_proba(X0)[:, 1]
-        )
+        return self.model_.predict_proba(X1)[:, 1] - self.model_.predict_proba(X0)[:, 1]
 
     def save(self, path: Path | str) -> None:
         path = Path(path)

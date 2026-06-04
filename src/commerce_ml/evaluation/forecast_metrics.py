@@ -62,8 +62,7 @@ def wmape(actual: np.ndarray | pd.Series, forecast: np.ndarray | pd.Series) -> f
 
     if len(actual) != len(forecast):
         raise ValueError(
-            f"actual and forecast must have the same length, "
-            f"got {len(actual)} and {len(forecast)}"
+            f"actual and forecast must have the same length, got {len(actual)} and {len(forecast)}"
         )
 
     denom = np.sum(np.abs(actual))
@@ -239,9 +238,13 @@ def summarise_forecast_metrics(
         Single-row DataFrame with columns: ``model``, ``wmape``,
         ``mase``, ``rmsse``.
     """
-    return pd.DataFrame([{
-        "model": label,
-        "wmape": wmape(actual, forecast),
-        "mase": mase(actual, forecast, naive_forecast),
-        "rmsse": rmsse(actual, forecast, train_actual, seasonality=7),
-    }])
+    return pd.DataFrame(
+        [
+            {
+                "model": label,
+                "wmape": wmape(actual, forecast),
+                "mase": mase(actual, forecast, naive_forecast),
+                "rmsse": rmsse(actual, forecast, train_actual, seasonality=7),
+            }
+        ]
+    )

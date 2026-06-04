@@ -175,11 +175,17 @@ def qini_coefficient(
     float
         Qini coefficient. Higher is better; 0 = same as random targeting.
     """
-    df = pd.DataFrame({
-        "y": np.asarray(y_true, dtype=float),
-        "w": np.asarray(treatment, dtype=float),
-        "score": np.asarray(uplift_score, dtype=float),
-    }).sort_values("score", ascending=False).reset_index(drop=True)
+    df = (
+        pd.DataFrame(
+            {
+                "y": np.asarray(y_true, dtype=float),
+                "w": np.asarray(treatment, dtype=float),
+                "score": np.asarray(uplift_score, dtype=float),
+            }
+        )
+        .sort_values("score", ascending=False)
+        .reset_index(drop=True)
+    )
 
     n = len(df)
     n_treated = df["w"].sum()

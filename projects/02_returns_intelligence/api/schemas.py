@@ -1,9 +1,11 @@
 """Pydantic request/response schemas for the returns intelligence API."""
+
 from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
 # ── Return likelihood ─────────────────────────────────────────────────────────
+
 
 class ReturnScoreRequest(BaseModel):
     """Score the return likelihood for a single order at fulfillment time."""
@@ -29,6 +31,7 @@ class ReturnScoreResponse(BaseModel):
 
 # ── Fraud detection ───────────────────────────────────────────────────────────
 
+
 class FraudScoreRequest(BaseModel):
     """Score a return event for potential fraud or abuse."""
 
@@ -44,10 +47,12 @@ class FraudScoreRequest(BaseModel):
     customer_return_rate: float = Field(..., ge=0, le=1)
     customer_total_orders: int = Field(default=5, ge=0)
     customer_total_returns: int = Field(default=1, ge=0)
-    shared_address_count: int = Field(default=0, ge=0,
-                                      description="Other customer accounts sharing this delivery address")
-    shared_payment_count: int = Field(default=0, ge=0,
-                                      description="Other accounts sharing the same payment method")
+    shared_address_count: int = Field(
+        default=0, ge=0, description="Other customer accounts sharing this delivery address"
+    )
+    shared_payment_count: int = Field(
+        default=0, ge=0, description="Other accounts sharing the same payment method"
+    )
 
 
 class FraudScoreResponse(BaseModel):
@@ -60,6 +65,7 @@ class FraudScoreResponse(BaseModel):
 
 
 # ── Exchange recommendation ───────────────────────────────────────────────────
+
 
 class ExchangeRequest(BaseModel):
     """Request exchange candidates for a return."""

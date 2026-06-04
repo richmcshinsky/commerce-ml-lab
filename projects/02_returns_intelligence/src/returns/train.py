@@ -45,12 +45,13 @@ def main(quick: bool = False) -> None:  # noqa: C901
 
     # ── Generate / load data ──────────────────────────────────────────────────
     logger.info("Generating synthetic dataset (%d customers)…", n_customers)
-    customers, orders, returns = generate_returns_dataset(
-        n_customers=n_customers, random_state=42
-    )
+    customers, orders, returns = generate_returns_dataset(n_customers=n_customers, random_state=42)
     logger.info(
         "  %d customers | %d orders | %d returns (fraud=%.2f%%)",
-        len(customers), len(orders), len(returns), returns["is_fraud"].mean() * 100,
+        len(customers),
+        len(orders),
+        len(returns),
+        returns["is_fraud"].mean() * 100,
     )
 
     customers.to_parquet(RESULTS / "customers.parquet", index=False)
@@ -58,14 +59,14 @@ def main(quick: bool = False) -> None:  # noqa: C901
     returns.to_parquet(RESULTS / "returns.parquet", index=False)
 
     # Temporal splits
-    orders_sorted  = orders.sort_values("order_date")
+    orders_sorted = orders.sort_values("order_date")
     returns_sorted = returns.sort_values("return_date")
-    n_tr_o  = int(len(orders_sorted)  * 0.8)
-    n_tr_r  = int(len(returns_sorted) * 0.8)
-    train_orders  = orders_sorted.iloc[:n_tr_o]
-    test_orders   = orders_sorted.iloc[n_tr_o:]
+    n_tr_o = int(len(orders_sorted) * 0.8)
+    n_tr_r = int(len(returns_sorted) * 0.8)
+    train_orders = orders_sorted.iloc[:n_tr_o]
+    test_orders = orders_sorted.iloc[n_tr_o:]
     train_returns = returns_sorted.iloc[:n_tr_r]
-    test_returns  = returns_sorted.iloc[n_tr_r:]
+    test_returns = returns_sorted.iloc[n_tr_r:]
 
     # ── Model A: Return likelihood ────────────────────────────────────────────
     logger.info("Training ReturnLikelihoodModel…")
@@ -86,11 +87,13 @@ def main(quick: bool = False) -> None:  # noqa: C901
 
     preds_fraud = fm.predict(test_returns, orders, customers)
     y_true_fr = test_returns["is_fraud"].astype(int).values
-    fm_prauc  = pr_auc(y_true_fr, preds_fraud["fraud_probability"].values)
-    p_at_50   = precision_at_k(y_true_fr, preds_fraud["fraud_probability"].values, k=50)
+    fm_prauc = pr_auc(y_true_fr, preds_fraud["fraud_probability"].values)
+    p_at_50 = precision_at_k(y_true_fr, preds_fraud["fraud_probability"].values, k=50)
     logger.info(
         "  Fraud PR-AUC: %.4f  Precision@50: %.1f%%  threshold=%.3f",
-        fm_prauc, p_at_50 * 100, fm.threshold_,
+        fm_prauc,
+        p_at_50 * 100,
+        fm.threshold_,
     )
     fm.save(RESULTS / "fraud_model.pkl")
 
@@ -102,14 +105,20 @@ def main(quick: bool = False) -> None:  # noqa: C901
     er.save(RESULTS / "exchange_model.pkl")
 
     # ── Save metrics ──────────────────────────────────────────────────────────
-    metrics = pd.DataFrame([
-        {"model": "ReturnLikelihood",  "metric": "pr_auc",       "value": round(lm_prauc, 4)},
-        {"model": "ReturnLikelihood",  "metric": "random_baseline", "value": round(y_true_rr.mean(), 4)},
-        {"model": "FraudDetection",    "metric": "pr_auc",       "value": round(fm_prauc, 4)},
-        {"model": "FraudDetection",    "metric": "precision_at_50", "value": round(p_at_50, 4)},
-        {"model": "FraudDetection",    "metric": "threshold",    "value": round(fm.threshold_, 4)},
-        {"model": "ExchangeRecommender", "metric": "catalog_size", "value": len(er.catalog_)},
-    ])
+    metrics = pd.DataFrame(
+        [
+            {"model": "ReturnLikelihood", "metric": "pr_auc", "value": round(lm_prauc, 4)},
+            {
+                "model": "ReturnLikelihood",
+                "metric": "random_baseline",
+                "value": round(y_true_rr.mean(), 4),
+            },
+            {"model": "FraudDetection", "metric": "pr_auc", "value": round(fm_prauc, 4)},
+            {"model": "FraudDetection", "metric": "precision_at_50", "value": round(p_at_50, 4)},
+            {"model": "FraudDetection", "metric": "threshold", "value": round(fm.threshold_, 4)},
+            {"model": "ExchangeRecommender", "metric": "catalog_size", "value": len(er.catalog_)},
+        ]
+    )
     metrics.to_csv(RESULTS / "returns_metrics.csv", index=False)
 
     print("\n" + "=" * 55)

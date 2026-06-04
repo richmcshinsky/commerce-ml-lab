@@ -14,6 +14,7 @@ import pytest
 
 from commerce_ml.data.loaders import DATA_DIR, get_data_dir
 
+
 class TestGetDataDir:
     def test_returns_path(self) -> None:
         d = get_data_dir()
@@ -31,16 +32,19 @@ class TestGetDataDir:
 class TestM5LoaderMissingData:
     def test_load_sales_raises_file_not_found(self, tmp_path: Path) -> None:
         from commerce_ml.data.loaders import load_m5_sales
+
         with pytest.raises(FileNotFoundError, match="make data-m5"):
             load_m5_sales(data_dir=tmp_path)
 
     def test_load_calendar_raises_file_not_found(self, tmp_path: Path) -> None:
         from commerce_ml.data.loaders import load_m5_calendar
+
         with pytest.raises(FileNotFoundError, match="make data-m5"):
             load_m5_calendar(data_dir=tmp_path)
 
     def test_load_prices_raises_file_not_found(self, tmp_path: Path) -> None:
         from commerce_ml.data.loaders import load_m5_prices
+
         with pytest.raises(FileNotFoundError, match="make data-m5"):
             load_m5_prices(data_dir=tmp_path)
 
@@ -48,6 +52,7 @@ class TestM5LoaderMissingData:
 class TestCriteoLoaderMissingData:
     def test_load_criteo_raises_file_not_found(self, tmp_path: Path) -> None:
         from commerce_ml.data.loaders import load_criteo
+
         with pytest.raises(FileNotFoundError, match="make data-criteo"):
             load_criteo(data_dir=tmp_path)
 
@@ -57,40 +62,62 @@ class TestSyntheticDataSchema:
 
     def test_returns_three_dataframes(self) -> None:
         from commerce_ml.data.synthetic import generate_returns_dataset
+
         customers, orders, returns = generate_returns_dataset(n_customers=100)
         import pandas as pd
+
         assert isinstance(customers, pd.DataFrame)
         assert isinstance(orders, pd.DataFrame)
         assert isinstance(returns, pd.DataFrame)
 
     def test_customers_has_required_columns(self) -> None:
         from commerce_ml.data.synthetic import generate_returns_dataset
+
         customers, _, _ = generate_returns_dataset(n_customers=100)
         required = [
-            "customer_id", "address_id", "payment_hash",
-            "account_age_days", "total_orders", "total_returns",
-            "lifetime_return_rate", "archetype",
+            "customer_id",
+            "address_id",
+            "payment_hash",
+            "account_age_days",
+            "total_orders",
+            "total_returns",
+            "lifetime_return_rate",
+            "archetype",
         ]
         for col in required:
             assert col in customers.columns, f"Missing column: {col}"
 
     def test_orders_has_required_columns(self) -> None:
         from commerce_ml.data.synthetic import generate_returns_dataset
+
         _, orders, _ = generate_returns_dataset(n_customers=100)
         required = [
-            "order_id", "customer_id", "order_date",
-            "category", "item_price", "quantity", "channel", "was_returned",
+            "order_id",
+            "customer_id",
+            "order_date",
+            "category",
+            "item_price",
+            "quantity",
+            "channel",
+            "was_returned",
         ]
         for col in required:
             assert col in orders.columns, f"Missing column: {col}"
 
     def test_returns_has_required_columns(self) -> None:
         from commerce_ml.data.synthetic import generate_returns_dataset
+
         _, _, returns = generate_returns_dataset(n_customers=100)
         required = [
-            "return_id", "order_id", "customer_id", "return_date",
-            "days_to_return", "reason_code", "condition",
-            "exchange_requested", "is_fraud",
+            "return_id",
+            "order_id",
+            "customer_id",
+            "return_date",
+            "days_to_return",
+            "reason_code",
+            "condition",
+            "exchange_requested",
+            "is_fraud",
         ]
         for col in required:
             assert col in returns.columns, f"Missing column: {col}"

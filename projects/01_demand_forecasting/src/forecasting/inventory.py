@@ -47,10 +47,13 @@ try:
         return float(_scipy_stats.norm.ppf(p))
 
 except ImportError:  # pragma: no cover — scipy always available in production
+
     def _norm_ppf(p: float) -> float:  # type: ignore[misc]
         """Normal quantile function via stdlib (scipy not available)."""
         from statistics import NormalDist
+
         return NormalDist().inv_cdf(p)
+
 
 logger = logging.getLogger(__name__)
 
@@ -333,7 +336,11 @@ def compute_sku_policies(
             }
         )
 
-    df = pd.DataFrame(records).sort_values("mean_daily_demand", ascending=False).reset_index(drop=True)
+    df = (
+        pd.DataFrame(records)
+        .sort_values("mean_daily_demand", ascending=False)
+        .reset_index(drop=True)
+    )
     logger.info("compute_sku_policies: %d SKUs processed.", len(df))
     return df
 

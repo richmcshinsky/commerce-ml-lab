@@ -55,7 +55,7 @@ def add_calendar_features(
     df = df.copy()
     dates = pd.to_datetime(df[date_col])
 
-    df["day_of_week"] = dates.dt.dayofweek          # 0=Mon … 6=Sun
+    df["day_of_week"] = dates.dt.dayofweek  # 0=Mon … 6=Sun
     df["day_of_month"] = dates.dt.day
     df["day_of_year"] = dates.dt.dayofyear
     df["week_of_year"] = dates.dt.isocalendar().week.astype(int)
@@ -153,9 +153,8 @@ def add_rolling_features(
         for func in agg_funcs:
             col_name = f"{target_col}_roll_{window}_{func}"
             if group_col is not None:
-                rolled = (
-                    df.groupby(group_col)[target_col]
-                    .transform(lambda s, w=window, f=func: s.shift(1).rolling(w, min_periods=1).agg(f))
+                rolled = df.groupby(group_col)[target_col].transform(
+                    lambda s, w=window, f=func: s.shift(1).rolling(w, min_periods=1).agg(f)
                 )
             else:
                 rolled = df[target_col].shift(1).rolling(window, min_periods=1).agg(func)

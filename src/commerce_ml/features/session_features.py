@@ -64,25 +64,39 @@ def build_session_features(
     grp = events.groupby(session_col)
 
     counts = (
-        events[events[event_col].isin(
-            ["page_view", "add_to_cart", "remove_from_cart", "size_change",
-             "checkout_start", "purchase"]
-        )]
+        events[
+            events[event_col].isin(
+                [
+                    "page_view",
+                    "add_to_cart",
+                    "remove_from_cart",
+                    "size_change",
+                    "checkout_start",
+                    "purchase",
+                ]
+            )
+        ]
         .groupby([session_col, event_col])
         .size()
         .unstack(fill_value=0)
-        .rename(columns={
-            "page_view": "n_page_views",
-            "add_to_cart": "n_add_to_cart",
-            "remove_from_cart": "n_remove_from_cart",
-            "size_change": "n_size_changes",
-            "checkout_start": "has_checkout_start",
-            "purchase": "converted",
-        })
+        .rename(
+            columns={
+                "page_view": "n_page_views",
+                "add_to_cart": "n_add_to_cart",
+                "remove_from_cart": "n_remove_from_cart",
+                "size_change": "n_size_changes",
+                "checkout_start": "has_checkout_start",
+                "purchase": "converted",
+            }
+        )
         .reindex(
             columns=[
-                "n_page_views", "n_add_to_cart", "n_remove_from_cart",
-                "n_size_changes", "has_checkout_start", "converted",
+                "n_page_views",
+                "n_add_to_cart",
+                "n_remove_from_cart",
+                "n_size_changes",
+                "has_checkout_start",
+                "converted",
             ],
             fill_value=0,
         )
@@ -93,8 +107,10 @@ def build_session_features(
 
     # Session duration
     duration = (
-        grp[ts_col].max() - grp[ts_col].min()
-    ).dt.total_seconds().rename("session_duration_seconds")
+        (grp[ts_col].max() - grp[ts_col].min())
+        .dt.total_seconds()
+        .rename("session_duration_seconds")
+    )
     counts = counts.join(duration)
 
     # Price features (optional)

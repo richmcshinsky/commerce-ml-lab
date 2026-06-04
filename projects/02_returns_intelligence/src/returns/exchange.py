@@ -35,9 +35,32 @@ import pandas as pd
 logger = logging.getLogger(__name__)
 
 # ── Size ordering for size-based rules ────────────────────────────────────────
-SIZE_ORDER: list[str] = ["XS", "S", "M", "L", "XL", "XXL", "2XL", "3XL",
-                          "5", "6", "7", "8", "9", "10", "11", "12",
-                          "28", "30", "32", "34", "36", "38", "40", "42"]
+SIZE_ORDER: list[str] = [
+    "XS",
+    "S",
+    "M",
+    "L",
+    "XL",
+    "XXL",
+    "2XL",
+    "3XL",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "11",
+    "12",
+    "28",
+    "30",
+    "32",
+    "34",
+    "36",
+    "38",
+    "40",
+    "42",
+]
 
 _SIZE_RANK = {s: i for i, s in enumerate(SIZE_ORDER)}
 
@@ -66,7 +89,7 @@ def _parse_item_id(item_id: str) -> tuple[str, str, str]:
     parts = item_id.split("_", 2)
     category = parts[0] if len(parts) > 0 else "unknown"
     sku_base = parts[1] if len(parts) > 1 else item_id
-    variant  = parts[2] if len(parts) > 2 else ""
+    variant = parts[2] if len(parts) > 2 else ""
     return category, sku_base, variant
 
 
@@ -204,16 +227,18 @@ def score_candidates(
     df["pop_norm"] = df["popularity"] / max_pop
 
     # Price proximity (0-1; 1 = same price)
-    df["price_prox"] = 1.0 - (df["avg_price"] - original_price).abs().clip(upper=original_price) / (original_price + 1e-6)
+    df["price_prox"] = 1.0 - (df["avg_price"] - original_price).abs().clip(upper=original_price) / (
+        original_price + 1e-6
+    )
 
     # Rank-based score (0-1)
     max_rank = df["popularity_rank"].max() if df["popularity_rank"].max() > 0 else 1
     df["rank_score"] = 1.0 - (df["popularity_rank"] - 1) / max_rank
 
     df["score"] = (
-        w_popularity       * df["pop_norm"]
-        + w_price_proximity  * df["price_prox"]
-        + w_popularity_rank  * df["rank_score"]
+        w_popularity * df["pop_norm"]
+        + w_price_proximity * df["price_prox"]
+        + w_popularity_rank * df["rank_score"]
     ).round(4)
 
     return df.sort_values("score", ascending=False).reset_index(drop=True)
@@ -266,7 +291,8 @@ class ExchangeRecommender:
         self.catalog_ = build_catalog(orders)
         logger.info(
             "ExchangeRecommender catalog built: %d items, %d categories.",
-            len(self.catalog_), self.catalog_["category"].nunique(),
+            len(self.catalog_),
+            self.catalog_["category"].nunique(),
         )
         return self
 
@@ -306,11 +332,17 @@ class ExchangeRecommender:
             item_id, reason_code, self.catalog_, top_k=top_k * 3
         )
         scored = score_candidates(
-            candidates, original_price, customer_return_rate,
-            self.w_popularity, self.w_price_proximity, self.w_popularity_rank,
+            candidates,
+            original_price,
+            customer_return_rate,
+            self.w_popularity,
+            self.w_price_proximity,
+            self.w_popularity_rank,
         )
         if scored.empty or "score" not in scored.columns:
-            return pd.DataFrame(columns=["item_id", "score", "avg_price", "popularity", "rule_applied"])
+            return pd.DataFrame(
+                columns=["item_id", "score", "avg_price", "popularity", "rule_applied"]
+            )
         top = scored.head(top_k)[["item_id", "score", "avg_price", "popularity"]].copy()
         top["rule_applied"] = rule
         return top.reset_index(drop=True)
@@ -343,10 +375,12 @@ class ExchangeRecommender:
         # Join item_price and item_id from orders
         ret = returns.merge(
             orders[["order_id", "item_id", "item_price"]],
-            on="order_id", how="left",
+            on="order_id",
+            how="left",
         ).merge(
             customers[["customer_id", "lifetime_return_rate"]],
-            on="customer_id", how="left",
+            on="customer_id",
+            how="left",
         )
         ret["lifetime_return_rate"] = ret["lifetime_return_rate"].fillna(0.12)
 
@@ -360,13 +394,15 @@ class ExchangeRecommender:
                 top_k=top_k,
             )
             for rank_i, rec_row in recs.iterrows():
-                rows.append({
-                    "return_id":    r.get("return_id", ""),
-                    "rank":         rank_i + 1,
-                    "item_id":      rec_row["item_id"],
-                    "score":        rec_row["score"],
-                    "rule_applied": rec_row["rule_applied"],
-                })
+                rows.append(
+                    {
+                        "return_id": r.get("return_id", ""),
+                        "rank": rank_i + 1,
+                        "item_id": rec_row["item_id"],
+                        "score": rec_row["score"],
+                        "rule_applied": rec_row["rule_applied"],
+                    }
+                )
 
         return pd.DataFrame(rows)
 

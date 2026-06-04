@@ -11,6 +11,7 @@ Run locally:
     make serve-returns
     # then open http://localhost:8002/docs
 """
+
 from __future__ import annotations
 
 import logging
@@ -32,7 +33,7 @@ from .schemas import (
 )
 
 logger = logging.getLogger(__name__)
-_HERE    = Path(__file__).parent
+_HERE = Path(__file__).parent
 _RESULTS = _HERE.parent / "results"
 
 
@@ -54,8 +55,8 @@ async def lifespan(app: FastAPI):  # type: ignore[type-arg]
 
     for attr, fname, cls_name, mod_name in [
         ("likelihood_model", "likelihood_model.pkl", "ReturnLikelihoodModel", "returns.likelihood"),
-        ("fraud_model",      "fraud_model.pkl",      "FraudDetectionModel",  "returns.fraud"),
-        ("exchange_model",   "exchange_model.pkl",   "ExchangeRecommender",  "returns.exchange"),
+        ("fraud_model", "fraud_model.pkl", "FraudDetectionModel", "returns.fraud"),
+        ("exchange_model", "exchange_model.pkl", "ExchangeRecommender", "returns.exchange"),
     ]:
         path = _RESULTS / fname
         if not path.exists():
@@ -63,6 +64,7 @@ async def lifespan(app: FastAPI):  # type: ignore[type-arg]
             continue
         try:
             import importlib
+
             mod = importlib.import_module(mod_name)
             cls = getattr(mod, cls_name)
             setattr(_state, attr, cls.load(path))
@@ -98,8 +100,8 @@ def _require(model: Any, name: str) -> Any:
 def health() -> dict[str, str]:
     loaded = {
         "likelihood": "ready" if _state.likelihood_model else "not_loaded",
-        "fraud":      "ready" if _state.fraud_model else "not_loaded",
-        "exchange":   "ready" if _state.exchange_model else "not_loaded",
+        "fraud": "ready" if _state.fraud_model else "not_loaded",
+        "exchange": "ready" if _state.exchange_model else "not_loaded",
     }
     return {"status": "ok", **loaded}
 
@@ -112,22 +114,31 @@ def score_return(request: ReturnScoreRequest) -> ReturnScoreResponse:
     Returns a probability and a risk tier (low / medium / high).
     """
     import pandas as pd
+
     model = _require(_state.likelihood_model, "ReturnLikelihoodModel")
 
-    order_df = pd.DataFrame([{
-        "order_id":    request.order_id,
-        "customer_id": request.customer_id,
-        "category":    request.category,
-        "item_price":  request.item_price,
-        "quantity":    request.quantity,
-        "channel":     request.channel,
-    }])
-    customer_df = pd.DataFrame([{
-        "customer_id":            request.customer_id,
-        "account_age_days":       request.account_age_days,
-        "lifetime_return_rate":   request.customer_lifetime_return_rate,
-        "total_orders":           request.customer_lifetime_orders,
-    }])
+    order_df = pd.DataFrame(
+        [
+            {
+                "order_id": request.order_id,
+                "customer_id": request.customer_id,
+                "category": request.category,
+                "item_price": request.item_price,
+                "quantity": request.quantity,
+                "channel": request.channel,
+            }
+        ]
+    )
+    customer_df = pd.DataFrame(
+        [
+            {
+                "customer_id": request.customer_id,
+                "account_age_days": request.account_age_days,
+                "lifetime_return_rate": request.customer_lifetime_return_rate,
+                "total_orders": request.customer_lifetime_orders,
+            }
+        ]
+    )
 
     result = model.predict_with_tier(order_df, customer_df)
     row = result.iloc[0]
@@ -146,43 +157,58 @@ def score_fraud(request: FraudScoreRequest) -> FraudScoreResponse:
     the API uses the values provided directly in the request.
     """
     import pandas as pd
+
     model = _require(_state.fraud_model, "FraudDetectionModel")
 
-    returns_df = pd.DataFrame([{
-        "return_id":     request.return_id,
-        "order_id":      request.order_id,
-        "customer_id":   request.customer_id,
-        "days_to_return": request.days_to_return,
-        "condition":     request.condition_reported,
-        "reason_code":   request.reason_code,
-        # Graph features provided directly from request
-        "shared_address_count": request.shared_address_count,
-        "shared_payment_count": request.shared_payment_count,
-        "component_size":       max(1, request.shared_address_count + 1),
-    }])
-    orders_df = pd.DataFrame([{
-        "order_id":   request.order_id,
-        "category":   request.category,
-        "item_price": request.item_price,
-    }])
-    customers_df = pd.DataFrame([{
-        "customer_id":            request.customer_id,
-        "account_age_days":       request.account_age_days,
-        "lifetime_return_rate":   request.customer_return_rate,
-        "total_orders":           request.customer_total_orders,
-        "total_returns":          request.customer_total_returns,
-        "address_id":             f"ADDR_{request.customer_id}",
-        "payment_hash":           f"PAY_{request.customer_id}",
-    }])
+    returns_df = pd.DataFrame(
+        [
+            {
+                "return_id": request.return_id,
+                "order_id": request.order_id,
+                "customer_id": request.customer_id,
+                "days_to_return": request.days_to_return,
+                "condition": request.condition_reported,
+                "reason_code": request.reason_code,
+                # Graph features provided directly from request
+                "shared_address_count": request.shared_address_count,
+                "shared_payment_count": request.shared_payment_count,
+                "component_size": max(1, request.shared_address_count + 1),
+            }
+        ]
+    )
+    orders_df = pd.DataFrame(
+        [
+            {
+                "order_id": request.order_id,
+                "category": request.category,
+                "item_price": request.item_price,
+            }
+        ]
+    )
+    customers_df = pd.DataFrame(
+        [
+            {
+                "customer_id": request.customer_id,
+                "account_age_days": request.account_age_days,
+                "lifetime_return_rate": request.customer_return_rate,
+                "total_orders": request.customer_total_orders,
+                "total_returns": request.customer_total_returns,
+                "address_id": f"ADDR_{request.customer_id}",
+                "payment_hash": f"PAY_{request.customer_id}",
+            }
+        ]
+    )
 
     # Build features directly without re-running graph computation
     from returns.fraud import _build_fraud_features
+
     feat_df = _build_fraud_features(returns_df, orders_df, customers_df)
     X = feat_df[[c for c in model.feature_cols_ if c in feat_df.columns]]
     # Pad any missing feature columns with 0
     for col in model.feature_cols_:
         if col not in X.columns:
-            X = X.copy(); X[col] = 0
+            X = X.copy()
+            X[col] = 0
     X = X[model.feature_cols_]
 
     score = float(model.predict_proba_raw(X)[0])

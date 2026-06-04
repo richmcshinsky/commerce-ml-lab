@@ -3,6 +3,7 @@
 LightGBM-dependent tests are skipped when lightgbm is unavailable.
 Pure-logic tests (features, evaluation) always run.
 """
+
 from __future__ import annotations
 import sys
 from pathlib import Path
@@ -16,15 +17,23 @@ sys.path.insert(0, str(Path(__file__).parents[2] / "src"))
 
 from commerce_ml.data.loaders import generate_criteo_like
 from intent.evaluate import (
-    auuc, policy_comparison, qini_coefficient, qini_curve, uplift_at_k,
+    auuc,
+    policy_comparison,
+    qini_coefficient,
+    qini_curve,
+    uplift_at_k,
 )
 from intent.features import (
-    FEATURE_COLS, add_treatment_interactions, get_feature_cols,
-    preprocess, temporal_split,
+    FEATURE_COLS,
+    add_treatment_interactions,
+    get_feature_cols,
+    preprocess,
+    temporal_split,
 )
 
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
+
 
 @pytest.fixture(scope="session")
 def small_df() -> pd.DataFrame:
@@ -37,6 +46,7 @@ def train_test(small_df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
 
 
 # ── Synthetic data ─────────────────────────────────────────────────────────────
+
 
 class TestSyntheticData:
     def test_schema(self, small_df: pd.DataFrame) -> None:
@@ -51,7 +61,7 @@ class TestSyntheticData:
 
     def test_persuadables_have_highest_cate(self, small_df: pd.DataFrame) -> None:
         ctrl = small_df[small_df["treatment"] == 0].groupby("segment")["conversion"].mean()
-        trt  = small_df[small_df["treatment"] == 1].groupby("segment")["conversion"].mean()
+        trt = small_df[small_df["treatment"] == 1].groupby("segment")["conversion"].mean()
         cate = (trt - ctrl).dropna()
         assert cate.get("persuadable", 0) > cate.get("sure_thing", 0)
         assert cate.get("persuadable", 0) > cate.get("lost_cause", 0)
@@ -68,6 +78,7 @@ class TestSyntheticData:
 
 # ── Feature engineering ───────────────────────────────────────────────────────
 
+
 class TestFeatures:
     def test_preprocess_standardises(self, small_df: pd.DataFrame) -> None:
         pp = preprocess(small_df)
@@ -83,9 +94,7 @@ class TestFeatures:
         feat = add_treatment_interactions(small_df)
         # For treated rows: f0_x_treat should equal f0
         treated = feat[feat["treatment"] == 1]
-        pd.testing.assert_series_equal(
-            treated["f0"], treated["f0_x_treat"], check_names=False
-        )
+        pd.testing.assert_series_equal(treated["f0"], treated["f0_x_treat"], check_names=False)
         # For control rows: f0_x_treat should be 0
         control = feat[feat["treatment"] == 0]
         assert (control["f0_x_treat"] == 0).all()
@@ -106,12 +115,13 @@ class TestFeatures:
 
 # ── Evaluation ────────────────────────────────────────────────────────────────
 
+
 class TestEvaluation:
     def test_qini_perfect_beats_random(self, small_df: pd.DataFrame) -> None:
         y = small_df["conversion"].values
         w = small_df["treatment"].values
         perfect = (small_df["segment"] == "persuadable").astype(float).values
-        rand    = np.random.default_rng(0).random(len(small_df))
+        rand = np.random.default_rng(0).random(len(small_df))
         assert qini_coefficient(y, w, perfect) > qini_coefficient(y, w, rand)
 
     def test_qini_random_near_zero(self, small_df: pd.DataFrame) -> None:
@@ -130,7 +140,11 @@ class TestEvaluation:
         assert curve["incremental_conversions"].iloc[0] == 0.0
 
     def test_qini_curve_length(self, small_df: pd.DataFrame) -> None:
-        y, w, s = small_df["conversion"].values, small_df["treatment"].values, np.ones(len(small_df))
+        y, w, s = (
+            small_df["conversion"].values,
+            small_df["treatment"].values,
+            np.ones(len(small_df)),
+        )
         curve = qini_curve(y, w, s, n_bins=50)
         assert len(curve) == 51  # 0..50 inclusive
 
@@ -166,6 +180,7 @@ _FAST = {"n_estimators": 10, "verbose": -1, "random_state": 42, "n_jobs": 1}
 class TestPropensityModel:
     def test_fit_predict(self, train_test: tuple) -> None:
         from intent.models import PropensityModel
+
         train, test = train_test
         model = PropensityModel(lgbm_params=_FAST).fit(train)
         proba = model.predict_proba(test)
@@ -174,17 +189,19 @@ class TestPropensityModel:
 
     def test_sure_things_score_higher_than_lost_causes(self, train_test: tuple) -> None:
         from intent.models import PropensityModel
+
         train, test = train_test
         model = PropensityModel(lgbm_params=_FAST).fit(train)
         proba = model.predict_proba(test)
-        sure  = proba[test["segment"].values == "sure_thing"].mean()
-        lost  = proba[test["segment"].values == "lost_cause"].mean()
+        sure = proba[test["segment"].values == "sure_thing"].mean()
+        lost = proba[test["segment"].values == "lost_cause"].mean()
         assert sure > lost, "Sure-things should have higher propensity than lost-causes"
 
 
 class TestTLearner:
     def test_fit_predict_cate(self, train_test: tuple) -> None:
         from intent.models import TLearner
+
         train, test = train_test
         model = TLearner(lgbm_params=_FAST).fit(train)
         cate = model.predict_cate(test)
@@ -193,6 +210,7 @@ class TestTLearner:
 
     def test_persuadables_have_higher_cate(self, train_test: tuple) -> None:
         from intent.models import TLearner
+
         train, test = train_test
         cate = TLearner(lgbm_params=_FAST).fit(train).predict_cate(test)
         pers = cate[test["segment"].values == "persuadable"].mean()
@@ -203,6 +221,7 @@ class TestTLearner:
 class TestSLearner:
     def test_fit_predict_cate(self, train_test: tuple) -> None:
         from intent.models import SLearner
+
         train, test = train_test
         model = SLearner(lgbm_params=_FAST).fit(train)
         cate = model.predict_cate(test)
@@ -211,6 +230,7 @@ class TestSLearner:
 
     def test_qini_positive(self, train_test: tuple) -> None:
         from intent.models import SLearner
+
         train, test = train_test
         model = SLearner(lgbm_params=_FAST).fit(train)
         cate = model.predict_cate(test)

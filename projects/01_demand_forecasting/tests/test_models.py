@@ -1,4 +1,5 @@
 """Tests for forecasting/models.py — baseline forecasters."""
+
 from __future__ import annotations
 
 import sys
@@ -16,9 +17,7 @@ from forecasting.models import (
 
 
 class TestNaiveForecaster:
-    def test_forecast_equals_last_training_value(
-        self, small_train_test: tuple
-    ) -> None:
+    def test_forecast_equals_last_training_value(self, small_train_test: tuple) -> None:
         train, test = small_train_test
         model = NaiveForecaster()
         model.fit(train)
@@ -26,11 +25,7 @@ class TestNaiveForecaster:
 
         # For each SKU, the forecast should equal the last training sales value
         for sku_id, _group in test.groupby("id"):
-            expected = float(
-                train[train["id"] == sku_id]
-                .sort_values("date")["sales"]
-                .iloc[-1]
-            )
+            expected = float(train[train["id"] == sku_id].sort_values("date")["sales"].iloc[-1])
             forecasts = preds[preds["id"] == sku_id]["forecast"]
             assert (forecasts == pytest.approx(expected)).all(), (
                 f"SKU {sku_id}: expected {expected}, got {forecasts.values}"
@@ -80,6 +75,7 @@ class TestSeasonalNaiveForecaster:
         # For each (id, test_date), the forecast should match train sales
         # exactly 7 days prior
         import pandas as pd
+
         train_lookup = train.set_index(["id", "date"])["sales"]
 
         for _, row in preds.dropna(subset=["forecast"]).head(20).iterrows():
@@ -109,10 +105,7 @@ class TestMovingAverageForecaster:
         # For one SKU, verify the forecast matches the trailing mean
         sku_id = test["id"].iloc[0]
         expected_mean = float(
-            train[train["id"] == sku_id]
-            .sort_values("date")["sales"]
-            .tail(window)
-            .mean()
+            train[train["id"] == sku_id].sort_values("date")["sales"].tail(window).mean()
         )
         actual_forecasts = preds[preds["id"] == sku_id]["forecast"].values
         assert (actual_forecasts == pytest.approx(expected_mean)).all()
@@ -122,9 +115,7 @@ class TestMovingAverageForecaster:
         preds = MovingAverageForecaster(28).fit(train).predict(test)
         assert (preds["forecast"] >= 0).all()
 
-    def test_different_windows_give_different_forecasts(
-        self, small_train_test: tuple
-    ) -> None:
+    def test_different_windows_give_different_forecasts(self, small_train_test: tuple) -> None:
         train, test = small_train_test
         p7 = MovingAverageForecaster(7).fit(train).predict(test)
         p28 = MovingAverageForecaster(28).fit(train).predict(test)
@@ -138,9 +129,7 @@ class TestMovingAverageForecaster:
 
 
 class TestEvaluateBaselines:
-    def test_returns_dataframe_with_all_models(
-        self, small_train_test: tuple
-    ) -> None:
+    def test_returns_dataframe_with_all_models(self, small_train_test: tuple) -> None:
         train, test = small_train_test
         metrics = evaluate_baselines(train, test)
         assert "model" in metrics.columns
@@ -150,9 +139,7 @@ class TestEvaluateBaselines:
         assert "SeasonalNaive(m=7)" in model_names
         assert "MovingAverage(28d)" in model_names
 
-    def test_wmape_values_are_positive(
-        self, small_train_test: tuple
-    ) -> None:
+    def test_wmape_values_are_positive(self, small_train_test: tuple) -> None:
         train, test = small_train_test
         metrics = evaluate_baselines(train, test)
         assert (metrics["wmape"] >= 0).all()

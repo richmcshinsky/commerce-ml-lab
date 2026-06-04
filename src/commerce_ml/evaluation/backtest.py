@@ -105,12 +105,10 @@ def walk_forward_splits(
         test_start = all_dates[train_end_pos + 1]
         test_end = all_dates[min(train_end_pos + horizon, len(all_dates) - 1)]
 
-        train_idx = [
-            i for d in all_dates[: train_end_pos + 1]
-            for i in date_to_idx.get(d, [])
-        ]
+        train_idx = [i for d in all_dates[: train_end_pos + 1] for i in date_to_idx.get(d, [])]
         test_idx = [
-            i for d in all_dates[train_end_pos + 1: train_end_pos + 1 + horizon]
+            i
+            for d in all_dates[train_end_pos + 1 : train_end_pos + 1 + horizon]
             for i in date_to_idx.get(d, [])
         ]
 
@@ -171,11 +169,13 @@ def run_backtest(
         forecasts = fit_predict_fn(train, test)
 
         for idx, (_, row) in zip(split.test_idx, test.iterrows(), strict=False):
-            records.append({
-                "fold": split.fold,
-                "date": row[date_col],
-                "actual": row[target_col],
-                "forecast": forecasts.loc[idx] if idx in forecasts.index else float("nan"),
-            })
+            records.append(
+                {
+                    "fold": split.fold,
+                    "date": row[date_col],
+                    "actual": row[target_col],
+                    "forecast": forecasts.loc[idx] if idx in forecasts.index else float("nan"),
+                }
+            )
 
     return pd.DataFrame(records)

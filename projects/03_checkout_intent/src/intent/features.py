@@ -6,6 +6,7 @@ statistics with anonymised names. This module adds:
 - Interaction terms: treatment × f_i for the S-learner
 - Convenience helpers for train/test splitting
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -15,7 +16,7 @@ FEATURE_COLS: list[str] = [f"f{i}" for i in range(12)]
 """The 12 anonymised Criteo features, identical to the raw column names."""
 
 TREATMENT_COL: str = "treatment"
-OUTCOME_COL:   str = "conversion"
+OUTCOME_COL: str = "conversion"
 
 
 def preprocess(
@@ -43,7 +44,7 @@ def preprocess(
     for col in feature_cols:
         if col not in df.columns:
             continue
-        mu  = df[col].mean()
+        mu = df[col].mean()
         std = df[col].std()
         if std > 0:
             df[col] = ((df[col] - mu) / std).clip(-clip_std, clip_std)

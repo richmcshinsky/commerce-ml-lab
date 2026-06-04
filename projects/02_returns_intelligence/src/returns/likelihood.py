@@ -100,14 +100,16 @@ class ReturnLikelihoodModel:
     def _build_features(self, orders: pd.DataFrame, customers: pd.DataFrame) -> pd.DataFrame:
         """Join order + customer tables and encode categoricals."""
         df = orders.merge(
-            customers[["customer_id", "account_age_days",
-                        "lifetime_return_rate", "total_orders"]],
-            on="customer_id", how="left",
+            customers[["customer_id", "account_age_days", "lifetime_return_rate", "total_orders"]],
+            on="customer_id",
+            how="left",
         )
-        df = df.rename(columns={
-            "lifetime_return_rate": "customer_lifetime_return_rate",
-            "total_orders": "customer_total_orders",
-        })
+        df = df.rename(
+            columns={
+                "lifetime_return_rate": "customer_lifetime_return_rate",
+                "total_orders": "customer_total_orders",
+            }
+        )
         for col in ["category", "channel"]:
             if col in df.columns:
                 df[col] = df[col].astype("category")
@@ -174,7 +176,8 @@ class ReturnLikelihoodModel:
 
         logger.info(
             "ReturnLikelihoodModel trained on %d orders, %d features.",
-            len(X), len(self.feature_cols_),
+            len(X),
+            len(self.feature_cols_),
         )
         return self
 
@@ -202,9 +205,7 @@ class ReturnLikelihoodModel:
             return self.calibrator_.predict(raw)
         return raw
 
-    def predict_with_tier(
-        self, orders: pd.DataFrame, customers: pd.DataFrame
-    ) -> pd.DataFrame:
+    def predict_with_tier(self, orders: pd.DataFrame, customers: pd.DataFrame) -> pd.DataFrame:
         """Return probabilities and risk tiers.
 
         Returns
@@ -214,13 +215,16 @@ class ReturnLikelihoodModel:
         """
         proba = self.predict_proba(orders, customers)
         tiers = np.where(
-            proba < RISK_THRESHOLDS["low"], "low",
+            proba < RISK_THRESHOLDS["low"],
+            "low",
             np.where(proba < RISK_THRESHOLDS["medium"], "medium", "high"),
         )
-        result = pd.DataFrame({
-            "return_probability": proba.round(4),
-            "risk_tier": tiers,
-        })
+        result = pd.DataFrame(
+            {
+                "return_probability": proba.round(4),
+                "risk_tier": tiers,
+            }
+        )
         if "order_id" in orders.columns:
             result.insert(0, "order_id", orders["order_id"].values)
         return result

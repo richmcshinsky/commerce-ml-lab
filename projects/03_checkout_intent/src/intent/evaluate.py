@@ -9,6 +9,7 @@ Metrics
 - **Incremental revenue**: cost-adjusted comparison of policies at a fixed budget.
 - **Qini curve**: full curve data for plotting.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -30,31 +31,35 @@ __all__ = [
     "policy_comparison",
 ]
 
+
 def qini_coefficient(
     y_true: np.ndarray | pd.Series,
     treatment: np.ndarray | pd.Series,
     uplift_score: np.ndarray | pd.Series,
 ) -> float:
     """Qini coefficient (area between Qini curve and random baseline)."""
-    df = pd.DataFrame({
-        "y": np.asarray(y_true, dtype=float),
-        "w": np.asarray(treatment, dtype=float),
-        "score": np.asarray(uplift_score, dtype=float),
-    }).sort_values("score", ascending=False).reset_index(drop=True)
+    df = (
+        pd.DataFrame(
+            {
+                "y": np.asarray(y_true, dtype=float),
+                "w": np.asarray(treatment, dtype=float),
+                "score": np.asarray(uplift_score, dtype=float),
+            }
+        )
+        .sort_values("score", ascending=False)
+        .reset_index(drop=True)
+    )
 
     n = len(df)
     n_treated = df["w"].sum()
     n_control = n - n_treated
     frac = np.arange(1, n + 1) / n
 
-    incremental = (
-        (df["y"] * df["w"]).cumsum()
-        - (df["y"] * (1 - df["w"])).cumsum() * (n_treated / max(n_control, 1))
+    incremental = (df["y"] * df["w"]).cumsum() - (df["y"] * (1 - df["w"])).cumsum() * (
+        n_treated / max(n_control, 1)
     )
     random_line = incremental.iloc[-1] * frac
     return float(_trapz(incremental.values, frac) - _trapz(random_line, frac))
-
-
 
 
 def qini_curve(
@@ -104,15 +109,21 @@ def qini_curve(
     fractions = np.linspace(0, 1, n_bins + 1)
     idx = np.minimum((fractions * n).astype(int), n - 1)
 
-    return pd.DataFrame({
-        "fraction_targeted": fractions,
-        "incremental_conversions": np.concatenate([[0], incremental[idx[1:]].values
-                                                   if hasattr(incremental, "values")
-                                                   else incremental[idx[1:]]]),
-        "random_baseline": fractions * float(incremental.iloc[-1]
-                                             if hasattr(incremental, "iloc")
-                                             else incremental[-1]),
-    })
+    return pd.DataFrame(
+        {
+            "fraction_targeted": fractions,
+            "incremental_conversions": np.concatenate(
+                [
+                    [0],
+                    incremental[idx[1:]].values
+                    if hasattr(incremental, "values")
+                    else incremental[idx[1:]],
+                ]
+            ),
+            "random_baseline": fractions
+            * float(incremental.iloc[-1] if hasattr(incremental, "iloc") else incremental[-1]),
+        }
+    )
 
 
 def auuc(
@@ -128,8 +139,8 @@ def auuc(
         AUUC value. Positive means better than random targeting.
     """
     curve = qini_curve(y_true, treatment, uplift_score)
-    area_model  = float(_trapz(curve["incremental_conversions"], curve["fraction_targeted"]))
-    area_random = float(_trapz(curve["random_baseline"],          curve["fraction_targeted"]))
+    area_model = float(_trapz(curve["incremental_conversions"], curve["fraction_targeted"]))
+    area_random = float(_trapz(curve["random_baseline"], curve["fraction_targeted"]))
     return area_model - area_random
 
 
@@ -156,7 +167,7 @@ def uplift_at_k(
     s = np.asarray(uplift_score, dtype=float)
 
     n_target = max(1, int(len(s) * k))
-    top_idx  = np.argsort(s)[::-1][:n_target]
+    top_idx = np.argsort(s)[::-1][:n_target]
 
     def _ate(idx: np.ndarray) -> float:
         w_sub = w[idx]
@@ -219,10 +230,12 @@ def policy_comparison(
         for k in k_values:
             uat_k = uplift_at_k(y_true, treatment, score, k)
             inc_c = incremental_conversions_at_k(y_true, treatment, score, k)
-            rows.append({
-                "model": name,
-                "k": k,
-                "uplift_at_k": round(uat_k, 6),
-                "incremental_conversions": round(inc_c, 1),
-            })
+            rows.append(
+                {
+                    "model": name,
+                    "k": k,
+                    "uplift_at_k": round(uat_k, 6),
+                    "incremental_conversions": round(inc_c, 1),
+                }
+            )
     return pd.DataFrame(rows)

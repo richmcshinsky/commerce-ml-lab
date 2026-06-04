@@ -20,6 +20,7 @@ rolling features for the forecast horizon.
 For a production deployment, the history would be fetched from a real-time
 database (DynamoDB, BigQuery, etc.) rather than the M5 flat file.
 """
+
 from __future__ import annotations
 
 import logging
@@ -52,9 +53,10 @@ _MODEL_PATH = _RESULTS / "lgbm_model.pkl"
 
 # ── App-level state ────────────────────────────────────────────────────────────
 
+
 class _AppState:
-    model: Any = None        # LGBMForecaster
-    history: pd.DataFrame | None = None   # training tail for all SKUs
+    model: Any = None  # LGBMForecaster
+    history: pd.DataFrame | None = None  # training tail for all SKUs
 
 
 _state = _AppState()
@@ -64,6 +66,7 @@ _state = _AppState()
 async def lifespan(app: FastAPI):  # type: ignore[type-arg]
     """Load model and data at startup; release at shutdown."""
     import sys
+
     src = _HERE.parent / "src"
     if str(src) not in sys.path:
         sys.path.insert(0, str(src))
@@ -112,6 +115,7 @@ app = FastAPI(
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
+
 
 def _require_model() -> Any:
     if _state.model is None:
@@ -177,10 +181,10 @@ def _build_future_df(
     rows = []
     for d in future_dates:
         row: dict = {
-            "id":           sku_id,
-            "date":         d,
-            "sales":        np.nan,
-            "sell_price":   last_price,
+            "id": sku_id,
+            "date": d,
+            "sales": np.nan,
+            "sell_price": last_price,
             "event_type_1": None,
         }
         # Carry forward categorical columns
@@ -193,6 +197,7 @@ def _build_future_df(
 
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
+
 
 @app.get("/health")
 def health() -> dict[str, str]:
@@ -217,8 +222,9 @@ def forecast(request: ForecastRequest) -> ForecastResponse:
 
     forecasts = [
         DayForecast(
-            date=row["date"].strftime("%Y-%m-%d") if hasattr(row["date"], "strftime")
-                 else str(row["date"])[:10],
+            date=row["date"].strftime("%Y-%m-%d")
+            if hasattr(row["date"], "strftime")
+            else str(row["date"])[:10],
             forecast=round(float(row["forecast"]), 4),
             lower_80=round(float(row["lower_80"]), 4),
             upper_80=round(float(row["upper_80"]), 4),
@@ -264,14 +270,14 @@ def reorder(request: ReorderRequest) -> ReorderResponse:
 
     preds = model.predict_with_intervals(future_df)
 
-    mean_d    = float(preds["forecast"].mean())
-    mean_low  = float(preds["lower_80"].mean())
+    mean_d = float(preds["forecast"].mean())
+    mean_low = float(preds["lower_80"].mean())
     mean_high = float(preds["upper_80"].mean())
-    std_d     = std_from_interval(mean_low, mean_high)
+    std_d = std_from_interval(mean_low, mean_high)
 
-    ss   = compute_ss(std_d, request.lead_time_days, request.service_level)
-    rop  = compute_rop(mean_d, request.lead_time_days, std_d, request.service_level)
-    oul  = order_up_to_level(rop, mean_d, review_period=7)
+    ss = compute_ss(std_d, request.lead_time_days, request.service_level)
+    rop = compute_rop(mean_d, request.lead_time_days, std_d, request.service_level)
+    oul = order_up_to_level(rop, mean_d, review_period=7)
 
     should_reorder = request.current_inventory <= rop
     qty = max(0, math.ceil(oul - request.current_inventory)) if should_reorder else 0

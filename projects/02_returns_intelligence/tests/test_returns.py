@@ -54,20 +54,40 @@ class TestSyntheticGenerator:
 
     def test_customer_schema(self, small_dataset: tuple) -> None:
         customers, _, _ = small_dataset
-        for col in ["customer_id", "address_id", "payment_hash",
-                    "account_age_days", "archetype", "lifetime_return_rate"]:
+        for col in [
+            "customer_id",
+            "address_id",
+            "payment_hash",
+            "account_age_days",
+            "archetype",
+            "lifetime_return_rate",
+        ]:
             assert col in customers.columns, f"Missing column: {col}"
 
     def test_order_schema(self, small_dataset: tuple) -> None:
         _, orders, _ = small_dataset
-        for col in ["order_id", "customer_id", "item_id", "category",
-                    "item_price", "channel", "was_returned"]:
+        for col in [
+            "order_id",
+            "customer_id",
+            "item_id",
+            "category",
+            "item_price",
+            "channel",
+            "was_returned",
+        ]:
             assert col in orders.columns, f"Missing column: {col}"
 
     def test_return_schema(self, small_dataset: tuple) -> None:
         _, _, returns = small_dataset
-        for col in ["return_id", "order_id", "customer_id", "days_to_return",
-                    "reason_code", "condition", "is_fraud"]:
+        for col in [
+            "return_id",
+            "order_id",
+            "customer_id",
+            "days_to_return",
+            "reason_code",
+            "condition",
+            "is_fraud",
+        ]:
             assert col in returns.columns, f"Missing column: {col}"
 
     def test_is_fraud_is_bool(self, small_dataset: tuple) -> None:
@@ -180,6 +200,7 @@ _FAST = {"n_estimators": 10, "verbose": -1, "random_state": 42}
 class TestReturnLikelihood:
     def test_fit_and_predict(self, small_dataset: tuple) -> None:
         from returns.likelihood import ReturnLikelihoodModel
+
         customers, orders, returns = small_dataset
         model = ReturnLikelihoodModel(lgbm_params=_FAST).fit(orders, customers)
         proba = model.predict_proba(orders.head(10), customers)
@@ -188,13 +209,19 @@ class TestReturnLikelihood:
 
     def test_risk_tiers_assigned(self, small_dataset: tuple) -> None:
         from returns.likelihood import ReturnLikelihoodModel
+
         customers, orders, _ = small_dataset
-        result = ReturnLikelihoodModel(lgbm_params=_FAST).fit(orders, customers).predict_with_tier(orders.head(20), customers)
+        result = (
+            ReturnLikelihoodModel(lgbm_params=_FAST)
+            .fit(orders, customers)
+            .predict_with_tier(orders.head(20), customers)
+        )
         assert "risk_tier" in result.columns
         assert result["risk_tier"].isin(["low", "medium", "high"]).all()
 
     def test_predict_without_fit_raises(self, small_dataset: tuple) -> None:
         from returns.likelihood import ReturnLikelihoodModel
+
         customers, orders, _ = small_dataset
         with pytest.raises(RuntimeError):
             ReturnLikelihoodModel().predict_proba(orders.head(5), customers)
@@ -206,16 +233,18 @@ networkx = pytest.importorskip("networkx", reason="networkx not installed")
 class TestFraudDetection:
     def test_fit_and_predict(self, small_dataset: tuple) -> None:
         from returns.fraud import FraudDetectionModel
+
         customers, orders, returns = small_dataset
-        model = FraudDetectionModel(
-            lgbm_params={**_FAST, "scale_pos_weight": 5}
-        ).fit(returns, orders, customers)
+        model = FraudDetectionModel(lgbm_params={**_FAST, "scale_pos_weight": 5}).fit(
+            returns, orders, customers
+        )
         preds = model.predict(returns.head(10), orders, customers)
         assert "fraud_probability" in preds.columns
         assert "is_flagged" in preds.columns
 
     def test_probabilities_in_unit_interval(self, small_dataset: tuple) -> None:
         from returns.fraud import FraudDetectionModel
+
         customers, orders, returns = small_dataset
         model = FraudDetectionModel(lgbm_params={**_FAST, "scale_pos_weight": 5})
         model.fit(returns, orders, customers)
@@ -224,6 +253,7 @@ class TestFraudDetection:
 
     def test_threshold_in_unit_interval(self, small_dataset: tuple) -> None:
         from returns.fraud import FraudDetectionModel
+
         customers, orders, returns = small_dataset
         model = FraudDetectionModel(lgbm_params={**_FAST, "scale_pos_weight": 5})
         model.fit(returns, orders, customers)

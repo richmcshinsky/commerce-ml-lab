@@ -132,12 +132,16 @@ def build_graph_features(
 
     # Merge onto returns
     result = returns.merge(
-        cust_graph[["customer_id", "shared_address_count", "shared_payment_count", "component_size"]],
+        cust_graph[
+            ["customer_id", "shared_address_count", "shared_payment_count", "component_size"]
+        ],
         on="customer_id",
         how="left",
     )
     result[["shared_address_count", "shared_payment_count", "component_size"]] = (
-        result[["shared_address_count", "shared_payment_count", "component_size"]].fillna(0).astype(int)
+        result[["shared_address_count", "shared_payment_count", "component_size"]]
+        .fillna(0)
+        .astype(int)
     )
     return result
 
@@ -151,31 +155,49 @@ def _build_fraud_features(
     # Join order features
     df = returns_with_graph.merge(
         orders[["order_id", "category", "item_price"]],
-        on="order_id", how="left",
+        on="order_id",
+        how="left",
     )
     # Join customer features
     df = df.merge(
-        customers[["customer_id", "account_age_days",
-                   "lifetime_return_rate", "total_orders", "total_returns"]],
-        on="customer_id", how="left",
+        customers[
+            [
+                "customer_id",
+                "account_age_days",
+                "lifetime_return_rate",
+                "total_orders",
+                "total_returns",
+            ]
+        ],
+        on="customer_id",
+        how="left",
     )
-    df = df.rename(columns={
-        "lifetime_return_rate": "customer_lifetime_return_rate",
-        "total_orders": "customer_total_orders",
-        "total_returns": "customer_total_returns",
-    })
+    df = df.rename(
+        columns={
+            "lifetime_return_rate": "customer_lifetime_return_rate",
+            "total_orders": "customer_total_orders",
+            "total_returns": "customer_total_returns",
+        }
+    )
 
     # Binary / derived features
-    df["is_used_condition"]    = (df["condition"] == "used").astype("int8")
+    df["is_used_condition"] = (df["condition"] == "used").astype("int8")
     df["is_damaged_condition"] = (df["condition"] == "damaged").astype("int8")
-    df["is_expensive_category"] = df["category"].isin(["apparel", "footwear", "electronics"]).astype("int8")
+    df["is_expensive_category"] = (
+        df["category"].isin(["apparel", "footwear", "electronics"]).astype("int8")
+    )
 
     for col in ["category", "reason_code"]:
         if col in df.columns:
             df[col] = df[col].astype("category")
 
-    for col in ["customer_lifetime_return_rate", "customer_total_orders",
-                "customer_total_returns", "account_age_days", "item_price"]:
+    for col in [
+        "customer_lifetime_return_rate",
+        "customer_total_orders",
+        "customer_total_returns",
+        "account_age_days",
+        "item_price",
+    ]:
         df[col] = df[col].fillna(df[col].median() if len(df) > 0 else 0)
 
     return df
@@ -277,16 +299,16 @@ class FraudDetectionModel:
             raise ImportError("lightgbm and scikit-learn required") from e
 
         returns_g = build_graph_features(returns, customers)
-        feat_df   = _build_fraud_features(returns_g, orders, customers)
-        avail     = [f for f in FRAUD_FEATURES if f in feat_df.columns]
+        feat_df = _build_fraud_features(returns_g, orders, customers)
+        avail = [f for f in FRAUD_FEATURES if f in feat_df.columns]
         self.feature_cols_ = avail
 
         X = feat_df[self.feature_cols_]
         y = feat_df[target_col].astype(int).values
         cat_cols = [c for c in self.feature_cols_ if X[c].dtype.name == "category"]
 
-        rng   = np.random.default_rng(42)
-        idx   = rng.permutation(len(X))
+        rng = np.random.default_rng(42)
+        idx = rng.permutation(len(X))
         n_val = max(1, int(len(X) * val_fraction))
         tr_idx, val_idx = idx[n_val:], idx[:n_val]
 
@@ -304,13 +326,13 @@ class FraudDetectionModel:
 
         if auto_threshold:
             val_scores_cal = self.predict_proba_raw(X.iloc[val_idx])
-            self.threshold_ = self._cost_optimal_threshold(
-                val_scores_cal, y[val_idx]
-            )
+            self.threshold_ = self._cost_optimal_threshold(val_scores_cal, y[val_idx])
 
         logger.info(
             "FraudDetectionModel trained: %d returns, %d features, threshold=%.3f",
-            len(X), len(self.feature_cols_), self.threshold_,
+            len(X),
+            len(self.feature_cols_),
+            self.threshold_,
         )
         return self
 
@@ -364,19 +386,21 @@ class FraudDetectionModel:
 
         t = threshold if threshold is not None else self.threshold_
         returns_g = build_graph_features(returns, customers)
-        feat_df   = _build_fraud_features(returns_g, orders, customers)
+        feat_df = _build_fraud_features(returns_g, orders, customers)
         X = feat_df[self.feature_cols_]
         scores = self.predict_proba_raw(X)
 
         # SHAP reason codes (fast: use gain importance as a proxy if shap unavailable)
         top_reasons = self._shap_reason_codes(X)
 
-        result = pd.DataFrame({
-            "fraud_probability": scores.round(4),
-            "is_flagged":        scores >= t,
-            "top_reason_1":      top_reasons[:, 0],
-            "top_reason_2":      top_reasons[:, 1],
-        })
+        result = pd.DataFrame(
+            {
+                "fraud_probability": scores.round(4),
+                "is_flagged": scores >= t,
+                "top_reason_1": top_reasons[:, 0],
+                "top_reason_2": top_reasons[:, 1],
+            }
+        )
         if "return_id" in returns.columns:
             result.insert(0, "return_id", returns["return_id"].values)
         return result
@@ -385,6 +409,7 @@ class FraudDetectionModel:
         """Return top-2 feature names per row by absolute SHAP or gain importance."""
         try:
             import shap
+
             explainer = shap.TreeExplainer(self.model_)
             sv = explainer.shap_values(X)
             shap_vals = sv[1] if isinstance(sv, list) else sv

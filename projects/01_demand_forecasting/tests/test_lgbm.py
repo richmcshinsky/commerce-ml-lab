@@ -56,6 +56,7 @@ def small_df() -> pd.DataFrame:
 def lgbm_train_test(synthetic_m5_long: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Train/test split of the synthetic M5 fixture for LightGBM tests."""
     from forecasting.data import train_test_split
+
     return train_test_split(synthetic_m5_long, test_days=28)
 
 
@@ -120,7 +121,9 @@ class TestLagFeatures:
         """First lag value for group B should not equal last value of group A."""
         result = add_lag_features(small_df, lags=[1])
         group_b_first = result[result["id"] == "B"].iloc[0]["sales_lag_1"]
-        assert np.isnan(group_b_first), "First lag of group B should be NaN, not group A's last value"
+        assert np.isnan(group_b_first), (
+            "First lag of group B should be NaN, not group A's last value"
+        )
 
 
 # ── Rolling features ──────────────────────────────────────────────────────────
@@ -171,10 +174,12 @@ class TestPriceFeatures:
         assert "price_change_pct" not in result.columns
 
     def test_discount_flag_fires_on_lower_price(self) -> None:
-        df = pd.DataFrame({
-            "id": ["X"] * 5,
-            "sell_price": [10.0, 10.0, 10.0, 10.0, 8.0],  # last row is discounted
-        })
+        df = pd.DataFrame(
+            {
+                "id": ["X"] * 5,
+                "sell_price": [10.0, 10.0, 10.0, 10.0, 8.0],  # last row is discounted
+            }
+        )
         result = add_price_features(df, price_col="sell_price", id_col="id", ref_window=4)
         # At row 4, ref_price ≈ 10, current = 8 → discount
         assert result.loc[4, "is_price_discount"] == 1
@@ -223,8 +228,11 @@ class TestBuildLGBMFeatures:
 
     def test_price_features_added_when_col_present(self, synthetic_m5_long: pd.DataFrame) -> None:
         result = build_lgbm_features(
-            synthetic_m5_long, lags=_TEST_LAGS, rolling_windows=_TEST_WINDOWS,
-            price_col="sell_price", drop_na_rows=False,
+            synthetic_m5_long,
+            lags=_TEST_LAGS,
+            rolling_windows=_TEST_WINDOWS,
+            price_col="sell_price",
+            drop_na_rows=False,
         )
         assert "price_change_pct" in result.columns
 
@@ -256,6 +264,7 @@ _TEST_MODEL_KWARGS: dict = {
 class TestLGBMForecaster:
     def test_fit_predict_runs(self, lgbm_train_test: tuple) -> None:
         from forecasting.lgbm_model import LGBMForecaster
+
         train, test = lgbm_train_test
         model = LGBMForecaster(**_TEST_MODEL_KWARGS)
         model.fit(train)
@@ -264,12 +273,14 @@ class TestLGBMForecaster:
 
     def test_forecast_length_matches_test(self, lgbm_train_test: tuple) -> None:
         from forecasting.lgbm_model import LGBMForecaster
+
         train, test = lgbm_train_test
         preds = LGBMForecaster(**_TEST_MODEL_KWARGS).fit(train).predict(test)
         assert len(preds) == len(test)
 
     def test_no_negative_forecasts(self, lgbm_train_test: tuple) -> None:
         from forecasting.lgbm_model import LGBMForecaster
+
         train, test = lgbm_train_test
         preds = LGBMForecaster(**_TEST_MODEL_KWARGS).fit(train).predict(test)
         assert (preds["forecast"] >= 0).all()
@@ -277,6 +288,7 @@ class TestLGBMForecaster:
     def test_interval_ordering(self, lgbm_train_test: tuple) -> None:
         """lower_80 <= forecast <= upper_80 must hold for every row."""
         from forecasting.lgbm_model import LGBMForecaster
+
         train, test = lgbm_train_test
         model = LGBMForecaster(**_TEST_MODEL_KWARGS)
         model.fit(train)
@@ -288,12 +300,14 @@ class TestLGBMForecaster:
 
     def test_predict_without_fit_raises(self, lgbm_train_test: tuple) -> None:
         from forecasting.lgbm_model import LGBMForecaster
+
         _, test = lgbm_train_test
         with pytest.raises(RuntimeError, match="fit()"):
             LGBMForecaster(**_TEST_MODEL_KWARGS).predict(test)
 
     def test_feature_importance_returns_dataframe(self, lgbm_train_test: tuple) -> None:
         from forecasting.lgbm_model import LGBMForecaster
+
         train, _ = lgbm_train_test
         model = LGBMForecaster(**_TEST_MODEL_KWARGS)
         model.fit(train)
@@ -305,6 +319,7 @@ class TestLGBMForecaster:
 
     def test_save_and_load(self, lgbm_train_test: tuple, tmp_path: Path) -> None:
         from forecasting.lgbm_model import LGBMForecaster
+
         train, test = lgbm_train_test
         model = LGBMForecaster(**_TEST_MODEL_KWARGS)
         model.fit(train)
