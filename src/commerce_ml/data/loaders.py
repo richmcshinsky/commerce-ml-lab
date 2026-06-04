@@ -290,7 +290,7 @@ def generate_criteo_like(
     treatment_rate: float = 0.50,
     base_conversion_rate: float = 0.04,
     random_state: int = 42,
-) -> "pd.DataFrame":
+) -> pd.DataFrame:
     """Generate a synthetic Criteo-like uplift dataset.
 
     Produces the same schema as ``load_criteo()`` with planted CATE
@@ -337,7 +337,7 @@ def generate_criteo_like(
     # f0-f3: correlated with propensity (sure-things have high f0)
     # f4-f7: correlated with treatment effect (persuadables have high f4)
     # f8-f11: noise features
-    F = rng.standard_normal((n, 12))
+    feat = rng.standard_normal((n, 12))
 
     # Plant segment-specific signal
     is_persuadable = segments == "persuadable"
@@ -345,22 +345,22 @@ def generate_criteo_like(
     is_lost_cause  = segments == "lost_cause"
     is_sleeping    = segments == "sleeping_dog"
 
-    F[is_sure_thing,  0] += 1.5   # high propensity signal
-    F[is_sure_thing,  1] += 1.0
-    F[is_persuadable, 4] += 1.5   # high treatment-response signal
-    F[is_persuadable, 5] += 1.0
-    F[is_lost_cause,  0] -= 1.5   # low propensity
-    F[is_sleeping,    0] -= 0.5
-    F[is_sleeping,    6] += 1.0   # sleeping-dog signal
+    feat[is_sure_thing,  0] += 1.5   # high propensity signal
+    feat[is_sure_thing,  1] += 1.0
+    feat[is_persuadable, 4] += 1.5   # high treatment-response signal
+    feat[is_persuadable, 5] += 1.0
+    feat[is_lost_cause,  0] -= 1.5   # low propensity
+    feat[is_sleeping,    0] -= 0.5
+    feat[is_sleeping,    6] += 1.0   # sleeping-dog signal
 
     feature_cols = [f"f{i}" for i in range(12)]
-    df = pd.DataFrame(F, columns=feature_cols)
+    df = pd.DataFrame(feat, columns=feature_cols)
 
     # Treatment assignment: RCT (random 50/50)
     df["treatment"] = (rng.random(n) < treatment_rate).astype(int)
 
     # Potential outcomes (logistic)
-    def sigmoid(x: "np.ndarray") -> "np.ndarray":
+    def sigmoid(x: np.ndarray) -> np.ndarray:
         return 1.0 / (1.0 + np.exp(-x))
 
     intercept = float(np.log(base_conversion_rate / (1 - base_conversion_rate)))

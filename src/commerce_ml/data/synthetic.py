@@ -114,7 +114,6 @@ def generate_returns_dataset(
         ring_sizes.append(sz)
         remaining -= sz
     n_ring_total = sum(ring_sizes)
-    n_rings      = len(ring_sizes)
     n_normal     = n - n_wardrobers - n_velocity - n_ring_total
 
     archetypes: list[str] = (
