@@ -1,0 +1,10 @@
+# Streamlit Cloud deployment requirements
+# These are the subset of dependencies needed to run streamlit_app.py.
+# Full development dependencies are managed by uv (see pyproject.toml).
+
+streamlit>=1.32
+pandas>=2.1
+numpy>=1.26
+plotly>=5.18
+pyarrow>=14.0
+scipy>=1.12

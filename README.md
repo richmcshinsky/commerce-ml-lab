@@ -1,6 +1,7 @@
 # commerce-ml-lab
 
 [![CI](https://github.com/richmcshinsky/commerce-ml-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/richmcshinsky/commerce-ml-lab/actions/workflows/ci.yml)
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://richmcshinsky-commerce-ml-lab.streamlit.app)
 
 A focused ML portfolio covering the three problem areas at the intersection of
 e-commerce operations and machine learning: demand forecasting, returns
