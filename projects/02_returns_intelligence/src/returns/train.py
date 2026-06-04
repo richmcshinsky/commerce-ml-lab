@@ -21,7 +21,6 @@ import logging
 import sys
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
@@ -34,7 +33,6 @@ sys.path.insert(0, str(_HERE.parents[3] / "src"))  # commerce_ml shared library
 def main(quick: bool = False) -> None:  # noqa: C901
     from commerce_ml.data.synthetic import generate_returns_dataset
     from commerce_ml.evaluation.classification_metrics import pr_auc, precision_at_k
-
     from returns.exchange import ExchangeRecommender
     from returns.fraud import FraudDetectionModel
     from returns.likelihood import ReturnLikelihoodModel

@@ -36,7 +36,6 @@ the LightGBM 80% prediction interval unless explicitly supplied.
 from __future__ import annotations
 
 import logging
-from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -347,7 +346,7 @@ def simulate_inventory(
     policy_s: float,
     policy_S: float,
     lead_time_days: int,
-    initial_inventory: Optional[float] = None,
+    initial_inventory: float | None = None,
     unit_cost: float = 10.0,
     cost_overstock: float = 1.0,
     cost_understock: float = 5.0,
@@ -467,7 +466,6 @@ def compute_policy_costs(
               total_cost, fill_rate, cycle_service_level, avg_on_hand,
               n_orders, n_stockout_days.
     """
-    n = len(simulation)
     total_demand = simulation["demand"].sum()
     total_stockout_units = simulation["stockout_units"].sum()
     total_holding = simulation["holding_cost"].sum()
@@ -497,7 +495,7 @@ def service_level_frontier(
     mean_demand_per_period: float,
     std_demand_per_period: float,
     lead_time_periods: int,
-    service_levels: Optional[list[float]] = None,
+    service_levels: list[float] | None = None,
 ) -> pd.DataFrame:
     """Compute the safety-stock vs. service-level trade-off curve.
 

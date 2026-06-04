@@ -18,7 +18,6 @@ sys.path.insert(0, str(Path(__file__).parents[4] / "src"))
 sys.path.insert(0, str(Path(__file__).parents[2] / "src"))
 
 from forecasting.inventory import (
-    DEFAULT_SERVICE_LEVEL,
     Z_80,
     compute_policy_costs,
     compute_sku_policies,

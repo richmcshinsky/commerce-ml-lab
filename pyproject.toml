@@ -53,8 +53,19 @@ ignore = ["E501", "B008"]
 known-first-party = ["commerce_ml"]
 
 [tool.ruff.lint.per-file-ignores]
+# Shared test dirs
 "tests/*" = ["N802", "N803"]
+# Project-level test dirs: also relax import-sort and unused-loop-var rules
+"**/tests/*" = ["N802", "N803", "N806", "I001", "B007"]
+# Top-level exploration notebooks (legacy pattern)
 "notebooks/*" = ["E402", "F401"]
+# All Jupyter notebooks: suppress style rules not suited to interactive code
+"**/*.ipynb" = ["E402", "E401", "E702", "F401", "F811", "F541", "I001", "B905", "B007"]
+# Project source files: N806/N803 allow ML-convention variable names (X, X0, X1, G);
+# E402 allows sys.path manipulation before project-local imports in train.py scripts
+"projects/*/src/**/*.py" = ["N806", "N803", "E402"]
+# API files: N806 for feature-matrix vars, E702 for inline assignments
+"projects/*/api/*.py" = ["N806", "E702"]
 
 [tool.mypy]
 python_version = "3.11"

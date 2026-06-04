@@ -28,7 +28,6 @@ Global model
 from __future__ import annotations
 
 import logging
-from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -311,9 +310,9 @@ def build_lgbm_features(
     id_col: str = "id",
     date_col: str = "date",
     sales_col: str = "sales",
-    price_col: Optional[str] = "sell_price",
-    event_col: Optional[str] = "event_type_1",
-    snap_col: Optional[str] = None,
+    price_col: str | None = "sell_price",
+    event_col: str | None = "event_type_1",
+    snap_col: str | None = None,
     lags: list[int] = LAG_DAYS,
     rolling_windows: list[int] = ROLLING_WINDOWS,
     cat_cols: list[str] = CAT_COLS_DEFAULT,
@@ -408,7 +407,7 @@ def get_feature_columns(
     sales_col: str = "sales",
     date_col: str = "date",
     id_col: str = "id",
-    extra_exclude: Optional[list[str]] = None,
+    extra_exclude: list[str] | None = None,
 ) -> list[str]:
     """Return the model feature column names from a feature-enriched DataFrame.
 

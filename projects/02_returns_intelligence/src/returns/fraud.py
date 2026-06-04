@@ -23,7 +23,7 @@ from __future__ import annotations
 import logging
 import pickle
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -107,14 +107,14 @@ def build_graph_features(
     G: Any = nx.Graph()
     G.add_nodes_from(customers["customer_id"])
 
-    for addr, grp in customers.groupby("address_id"):
+    for _addr, grp in customers.groupby("address_id"):
         cids = grp["customer_id"].tolist()
         if len(cids) > 1:
             for i in range(len(cids)):
                 for j in range(i + 1, len(cids)):
                     G.add_edge(cids[i], cids[j])
 
-    for pay, grp in customers.groupby("payment_hash"):
+    for _pay, grp in customers.groupby("payment_hash"):
         cids = grp["customer_id"].tolist()
         if len(cids) > 1:
             for i in range(len(cids)):
@@ -211,7 +211,7 @@ class FraudDetectionModel:
 
     def __init__(
         self,
-        lgbm_params: Optional[dict[str, Any]] = None,
+        lgbm_params: dict[str, Any] | None = None,
         fp_cost: float = DEFAULT_FP_COST,
         fn_cost: float = DEFAULT_FN_COST,
         calibrate: bool = True,
@@ -249,7 +249,7 @@ class FraudDetectionModel:
         target_col: str = "is_fraud",
         val_fraction: float = 0.2,
         auto_threshold: bool = True,
-    ) -> "FraudDetectionModel":
+    ) -> FraudDetectionModel:
         """Train the fraud model.
 
         Parameters
@@ -342,7 +342,7 @@ class FraudDetectionModel:
         returns: pd.DataFrame,
         orders: pd.DataFrame,
         customers: pd.DataFrame,
-        threshold: Optional[float] = None,
+        threshold: float | None = None,
     ) -> pd.DataFrame:
         """Score returns for fraud with SHAP reason codes.
 
@@ -407,7 +407,7 @@ class FraudDetectionModel:
         logger.info("FraudDetectionModel saved to %s", path)
 
     @classmethod
-    def load(cls, path: Path | str) -> "FraudDetectionModel":
+    def load(cls, path: Path | str) -> FraudDetectionModel:
         with Path(path).open("rb") as f:
             obj = pickle.load(f)
         if not isinstance(obj, cls):

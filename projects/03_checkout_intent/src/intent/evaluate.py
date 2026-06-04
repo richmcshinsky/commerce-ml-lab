@@ -11,14 +11,12 @@ Metrics
 """
 from __future__ import annotations
 
-from typing import Optional
-
 import numpy as np
 import pandas as pd
 
 # np.trapz removed in NumPy 2.0; np.trapezoid is the replacement (added in 2.0).
 # Use whichever is available.
-_trapz = getattr(np, "trapezoid", None) or getattr(np, "trapz")
+_trapz = getattr(np, "trapezoid", None) or np.trapz  # type: ignore[attr-defined]
 
 # qini_coefficient implemented locally below — avoids sklearn import at module level
 
@@ -33,9 +31,9 @@ __all__ = [
 ]
 
 def qini_coefficient(
-    y_true: "np.ndarray | pd.Series",
-    treatment: "np.ndarray | pd.Series",
-    uplift_score: "np.ndarray | pd.Series",
+    y_true: np.ndarray | pd.Series,
+    treatment: np.ndarray | pd.Series,
+    uplift_score: np.ndarray | pd.Series,
 ) -> float:
     """Qini coefficient (area between Qini curve and random baseline)."""
     df = pd.DataFrame({
@@ -159,7 +157,6 @@ def uplift_at_k(
 
     n_target = max(1, int(len(s) * k))
     top_idx  = np.argsort(s)[::-1][:n_target]
-    rest_idx = np.argsort(s)[::-1][n_target:]
 
     def _ate(idx: np.ndarray) -> float:
         w_sub = w[idx]

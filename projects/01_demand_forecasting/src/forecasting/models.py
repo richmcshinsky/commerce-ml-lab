@@ -49,7 +49,7 @@ class BaseForecaster(ABC):
         id_col: str = "id",
         date_col: str = "date",
         sales_col: str = "sales",
-    ) -> "BaseForecaster":
+    ) -> BaseForecaster:
         """Fit the model on training data.
 
         Parameters
@@ -126,7 +126,7 @@ class NaiveForecaster(BaseForecaster):
         id_col: str = "id",
         date_col: str = "date",
         sales_col: str = "sales",
-    ) -> "NaiveForecaster":
+    ) -> NaiveForecaster:
         """Store the last observed sales value for each series.
 
         Parameters
@@ -219,7 +219,7 @@ class SeasonalNaiveForecaster(BaseForecaster):
         id_col: str = "id",
         date_col: str = "date",
         sales_col: str = "sales",
-    ) -> "SeasonalNaiveForecaster":
+    ) -> SeasonalNaiveForecaster:
         """Store the tail of training data (last seasonality * max_horizon rows).
 
         We store the full training tail rather than just the last
@@ -349,7 +349,7 @@ class MovingAverageForecaster(BaseForecaster):
         id_col: str = "id",
         date_col: str = "date",
         sales_col: str = "sales",
-    ) -> "MovingAverageForecaster":
+    ) -> MovingAverageForecaster:
         """Compute the trailing mean for each series.
 
         Parameters

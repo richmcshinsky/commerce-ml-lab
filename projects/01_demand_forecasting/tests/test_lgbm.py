@@ -19,9 +19,7 @@ sys.path.insert(0, str(Path(__file__).parents[4] / "src"))
 sys.path.insert(0, str(Path(__file__).parents[2] / "src"))
 
 from forecasting.features import (
-    LAG_DAYS,
     MIN_LAG,
-    ROLLING_WINDOWS,
     add_calendar_features,
     add_lag_features,
     add_price_features,

@@ -39,7 +39,7 @@ from __future__ import annotations
 import logging
 import pickle
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -122,12 +122,12 @@ class LGBMForecaster(BaseForecaster):
 
     def __init__(
         self,
-        lgbm_params: Optional[dict[str, Any]] = None,
+        lgbm_params: dict[str, Any] | None = None,
         lags: list[int] = LAG_DAYS,
         rolling_windows: list[int] = ROLLING_WINDOWS,
         cat_cols: list[str] = CAT_COLS_DEFAULT,
-        price_col: Optional[str] = "sell_price",
-        event_col: Optional[str] = "event_type_1",
+        price_col: str | None = "sell_price",
+        event_col: str | None = "event_type_1",
         max_history_rows: int = 500,
     ) -> None:
         self.lgbm_params = lgbm_params if lgbm_params is not None else LGBM_PARAMS.copy()
@@ -142,7 +142,7 @@ class LGBMForecaster(BaseForecaster):
         self.model_q10_: Any = None
         self.model_q90_: Any = None
         self.feature_cols_: list[str] = []
-        self.history_tail_: Optional[pd.DataFrame] = None
+        self.history_tail_: pd.DataFrame | None = None
         self._id_col: str = "id"
         self._date_col: str = "date"
         self._sales_col: str = "sales"
@@ -192,7 +192,7 @@ class LGBMForecaster(BaseForecaster):
         id_col: str = "id",
         date_col: str = "date",
         sales_col: str = "sales",
-    ) -> "LGBMForecaster":
+    ) -> LGBMForecaster:
         """Train point-forecast and quantile LightGBM models.
 
         Parameters
@@ -454,7 +454,7 @@ class LGBMForecaster(BaseForecaster):
         logger.info("LGBMForecaster saved to %s", path)
 
     @classmethod
-    def load(cls, path: Path | str) -> "LGBMForecaster":
+    def load(cls, path: Path | str) -> LGBMForecaster:
         """Load a serialised forecaster from disk.
 
         Parameters

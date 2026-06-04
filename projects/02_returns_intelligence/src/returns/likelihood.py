@@ -27,7 +27,7 @@ from __future__ import annotations
 import logging
 import pickle
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -72,7 +72,7 @@ class ReturnLikelihoodModel:
 
     def __init__(
         self,
-        lgbm_params: Optional[dict[str, Any]] = None,
+        lgbm_params: dict[str, Any] | None = None,
         calibrate: bool = True,
     ) -> None:
         self.lgbm_params = lgbm_params or {
@@ -122,7 +122,7 @@ class ReturnLikelihoodModel:
         customers: pd.DataFrame,
         target_col: str = "was_returned",
         val_fraction: float = 0.2,
-    ) -> "ReturnLikelihoodModel":
+    ) -> ReturnLikelihoodModel:
         """Train the return likelihood model.
 
         Parameters
@@ -142,7 +142,6 @@ class ReturnLikelihoodModel:
         """
         try:
             from lightgbm import LGBMClassifier
-            from sklearn.calibration import CalibratedClassifierCV
             from sklearn.isotonic import IsotonicRegression
         except ImportError as e:
             raise ImportError("lightgbm and scikit-learn required") from e
@@ -235,7 +234,7 @@ class ReturnLikelihoodModel:
         logger.info("ReturnLikelihoodModel saved to %s", path)
 
     @classmethod
-    def load(cls, path: Path | str) -> "ReturnLikelihoodModel":
+    def load(cls, path: Path | str) -> ReturnLikelihoodModel:
         """Load from disk."""
         with Path(path).open("rb") as f:
             obj = pickle.load(f)

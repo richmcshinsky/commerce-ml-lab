@@ -23,7 +23,7 @@ from __future__ import annotations
 import logging
 import pickle
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -84,7 +84,7 @@ class PropensityModel:
 
     def __init__(
         self,
-        lgbm_params: Optional[dict[str, Any]] = None,
+        lgbm_params: dict[str, Any] | None = None,
         feature_cols: list[str] = FEATURE_COLS,
     ) -> None:
         self.lgbm_params = lgbm_params or _DEFAULT_PARAMS.copy()
@@ -99,7 +99,7 @@ class PropensityModel:
         self,
         train: pd.DataFrame,
         outcome_col: str = OUTCOME_COL,
-    ) -> "PropensityModel":
+    ) -> PropensityModel:
         """Train on all rows (ignores treatment assignment).
 
         Parameters
@@ -134,7 +134,7 @@ class PropensityModel:
             pickle.dump(self, f)
 
     @classmethod
-    def load(cls, path: Path | str) -> "PropensityModel":
+    def load(cls, path: Path | str) -> PropensityModel:
         with Path(path).open("rb") as f:
             return pickle.load(f)
 
@@ -161,7 +161,7 @@ class TLearner:
 
     def __init__(
         self,
-        lgbm_params: Optional[dict[str, Any]] = None,
+        lgbm_params: dict[str, Any] | None = None,
         feature_cols: list[str] = FEATURE_COLS,
     ) -> None:
         self.lgbm_params = lgbm_params or _DEFAULT_PARAMS.copy()
@@ -178,7 +178,7 @@ class TLearner:
         train: pd.DataFrame,
         treatment_col: str = TREATMENT_COL,
         outcome_col: str = OUTCOME_COL,
-    ) -> "TLearner":
+    ) -> TLearner:
         """Train mu1 on treated rows and mu0 on control rows.
 
         Parameters
@@ -236,7 +236,7 @@ class TLearner:
             pickle.dump(self, f)
 
     @classmethod
-    def load(cls, path: Path | str) -> "TLearner":
+    def load(cls, path: Path | str) -> TLearner:
         with Path(path).open("rb") as f:
             return pickle.load(f)
 
@@ -269,7 +269,7 @@ class SLearner:
 
     def __init__(
         self,
-        lgbm_params: Optional[dict[str, Any]] = None,
+        lgbm_params: dict[str, Any] | None = None,
         feature_cols: list[str] = FEATURE_COLS,
     ) -> None:
         self.lgbm_params = lgbm_params or _DEFAULT_PARAMS.copy()
@@ -286,7 +286,7 @@ class SLearner:
         train: pd.DataFrame,
         treatment_col: str = TREATMENT_COL,
         outcome_col: str = OUTCOME_COL,
-    ) -> "SLearner":
+    ) -> SLearner:
         """Train on all rows with treatment as a feature.
 
         Returns
@@ -345,6 +345,6 @@ class SLearner:
             pickle.dump(self, f)
 
     @classmethod
-    def load(cls, path: Path | str) -> "SLearner":
+    def load(cls, path: Path | str) -> SLearner:
         with Path(path).open("rb") as f:
             return pickle.load(f)

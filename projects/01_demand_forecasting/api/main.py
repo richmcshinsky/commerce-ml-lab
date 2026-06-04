@@ -25,7 +25,7 @@ from __future__ import annotations
 import logging
 import math
 from contextlib import asynccontextmanager
-from datetime import date, timedelta
+from datetime import timedelta
 from pathlib import Path
 from typing import Any
 
@@ -76,8 +76,8 @@ async def lifespan(app: FastAPI):  # type: ignore[type-arg]
         )
     else:
         try:
-            from forecasting.lgbm_model import LGBMForecaster
             from forecasting.data import load_m5_long, train_test_split
+            from forecasting.lgbm_model import LGBMForecaster
 
             _state.model = LGBMForecaster.load(_MODEL_PATH)
             df = load_m5_long()
@@ -249,9 +249,13 @@ def reorder(request: ReorderRequest) -> ReorderResponse:
     5. The recommended quantity is max(0, S - current_inventory).
     """
     from forecasting.inventory import (
-        std_from_interval,
-        reorder_point as compute_rop,
         order_up_to_level,
+        std_from_interval,
+    )
+    from forecasting.inventory import (
+        reorder_point as compute_rop,
+    )
+    from forecasting.inventory import (
         safety_stock as compute_ss,
     )
 

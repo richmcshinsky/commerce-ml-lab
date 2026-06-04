@@ -29,7 +29,6 @@ def synthetic_m5_long() -> pd.DataFrame:
     """
     rng = np.random.default_rng(42)
 
-    n_skus = 10
     n_days = 120
     start_date = pd.Timestamp("2020-01-01")
 
@@ -44,8 +43,6 @@ def synthetic_m5_long() -> pd.DataFrame:
         "HOBBIES_1": "HOBBIES", "HOBBIES_2": "HOBBIES", "HOBBIES_3": "HOBBIES",
         "HOUSEHOLD_1": "HOUSEHOLD", "HOUSEHOLD_2": "HOUSEHOLD", "HOUSEHOLD_3": "HOUSEHOLD",
     }
-    dept_map = {k: k for k in categories}  # dept_id == cat_id for simplicity
-
     price_by_cat = {"FOODS": 5.0, "HOBBIES": 15.0, "HOUSEHOLD": 10.0}
 
     rows = []

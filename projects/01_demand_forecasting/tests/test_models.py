@@ -4,7 +4,6 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-import numpy as np
 import pytest
 
 sys.path.insert(0, str(Path(__file__).parents[4] / "src"))
@@ -26,7 +25,7 @@ class TestNaiveForecaster:
         preds = model.predict(test)
 
         # For each SKU, the forecast should equal the last training sales value
-        for sku_id, group in test.groupby("id"):
+        for sku_id, _group in test.groupby("id"):
             expected = float(
                 train[train["id"] == sku_id]
                 .sort_values("date")["sales"]

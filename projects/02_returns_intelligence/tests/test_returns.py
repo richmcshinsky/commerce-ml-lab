@@ -12,14 +12,13 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 import pytest
 
 sys.path.insert(0, str(Path(__file__).parents[4] / "src"))
 sys.path.insert(0, str(Path(__file__).parents[2] / "src"))
 
-from commerce_ml.data.synthetic import SyntheticConfig, generate_returns_dataset
+from commerce_ml.data.synthetic import generate_returns_dataset
 from returns.exchange import (
     ExchangeRecommender,
     build_catalog,

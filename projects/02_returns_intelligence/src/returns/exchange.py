@@ -29,9 +29,7 @@ from __future__ import annotations
 import logging
 import pickle
 from pathlib import Path
-from typing import Optional
 
-import numpy as np
 import pandas as pd
 
 logger = logging.getLogger(__name__)
@@ -247,13 +245,13 @@ class ExchangeRecommender:
         self.w_popularity = w_popularity
         self.w_price_proximity = w_price_proximity
         self.w_popularity_rank = w_popularity_rank
-        self.catalog_: Optional[pd.DataFrame] = None
+        self.catalog_: pd.DataFrame | None = None
 
     @property
     def name(self) -> str:
         return "ExchangeRecommender"
 
-    def fit(self, orders: pd.DataFrame) -> "ExchangeRecommender":
+    def fit(self, orders: pd.DataFrame) -> ExchangeRecommender:
         """Build the item catalog from training orders.
 
         Parameters
@@ -379,7 +377,7 @@ class ExchangeRecommender:
             pickle.dump(self, f)
 
     @classmethod
-    def load(cls, path: Path | str) -> "ExchangeRecommender":
+    def load(cls, path: Path | str) -> ExchangeRecommender:
         with Path(path).open("rb") as f:
             obj = pickle.load(f)
         if not isinstance(obj, cls):
