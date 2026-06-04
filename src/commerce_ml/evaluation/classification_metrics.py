@@ -199,7 +199,8 @@ def qini_coefficient(
     incremental = cumulative_treated - cumulative_control * (n_treated / max(n_control, 1))
     random_line = incremental.iloc[-1] * fraction_targeted
 
-    qini_area = float(np.trapz(incremental, fraction_targeted))
-    random_area = float(np.trapz(random_line, fraction_targeted))
+    _trapz = getattr(np, "trapezoid", np.trapz)  # type: ignore[attr-defined]
+    qini_area = float(_trapz(incremental, fraction_targeted))
+    random_area = float(_trapz(random_line, fraction_targeted))
 
     return qini_area - random_area
