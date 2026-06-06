@@ -29,7 +29,9 @@ class ShippingOptionResult(BaseModel):
     price: float
     transit_days: str
     p_convert: float = Field(..., description="Predicted conversion probability at this price")
-    expected_margin: float = Field(..., description="Expected margin = P(convert) × (product_margin + price - ship_cost)")
+    expected_margin: float = Field(
+        ..., description="Expected margin = P(convert) × (product_margin + price - ship_cost)"
+    )
 
 
 class ShippingRecommendationRequest(BaseModel):

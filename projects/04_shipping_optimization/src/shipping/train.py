@@ -36,7 +36,7 @@ _HERE = Path(__file__).parent
 # _HERE = src/shipping/  →  parents[0] = src/  →  parents[1] = project root
 # _HERE.parents[3] = repo root  →  repo root / src  = shared commerce_ml library
 sys.path.insert(0, str(_HERE.parents[3] / "src"))  # commerce_ml shared library
-sys.path.insert(0, str(_HERE.parent))              # project src/ — makes 'shipping' importable
+sys.path.insert(0, str(_HERE.parent))  # project src/ — makes 'shipping' importable
 
 RESULTS = _HERE.parent.parent / "results"
 
@@ -93,8 +93,12 @@ def main(quick: bool = False) -> None:  # noqa: C901
     seg_price_df = optimizer.segment_price_distribution(test_df)
 
     # ── Compute improvement metrics ────────────────────────────────────────────
-    flat_em = float(policy_df[policy_df["policy"].str.startswith("Flat")]["mean_expected_margin"].iloc[0])
-    opt_em = float(policy_df[policy_df["policy"].str.startswith("Opt")]["mean_expected_margin"].iloc[0])
+    flat_em = float(
+        policy_df[policy_df["policy"].str.startswith("Flat")]["mean_expected_margin"].iloc[0]
+    )
+    opt_em = float(
+        policy_df[policy_df["policy"].str.startswith("Opt")]["mean_expected_margin"].iloc[0]
+    )
     improvement_pct = (opt_em - flat_em) / abs(flat_em) * 100
 
     flat_p = float(policy_df[policy_df["policy"].str.startswith("Flat")]["mean_p_convert"].iloc[0])
@@ -139,15 +143,25 @@ def main(quick: bool = False) -> None:  # noqa: C901
         if seg_sessions.empty:
             continue
         p_curves = [model.predict_at_price(seg_sessions, p).mean() for p in prices]
-        ax.plot(prices, p_curves, label=seg.replace("_", " ").title(),
-                color=seg_colors[seg], linewidth=2.2)
+        ax.plot(
+            prices,
+            p_curves,
+            label=seg.replace("_", " ").title(),
+            color=seg_colors[seg],
+            linewidth=2.2,
+        )
 
     ax.set_xlabel("Shipping price ($)")
     ax.set_ylabel("Mean P(convert)")
     ax.set_title("Price elasticity by customer segment")
     ax.legend()
-    ax.axvline(x=FLAT_RATE_OPTION.price, color="grey", linestyle="--", alpha=0.5,
-               label=f"Flat rate (${FLAT_RATE_OPTION.price:.2f})")
+    ax.axvline(
+        x=FLAT_RATE_OPTION.price,
+        color="grey",
+        linestyle="--",
+        alpha=0.5,
+        label=f"Flat rate (${FLAT_RATE_OPTION.price:.2f})",
+    )
     ax.grid(alpha=0.3)
 
     # Chart 2: Expected margin curves
@@ -157,12 +171,19 @@ def main(quick: bool = False) -> None:  # noqa: C901
         if seg_sessions.empty:
             continue
         em_curves = [
-            (model.predict_at_price(seg_sessions, p) *
-             (seg_sessions["cart_value"] * PRODUCT_MARGIN_RATE + p - SHIPPING_COST_TO_MERCHANT)).mean()
+            (
+                model.predict_at_price(seg_sessions, p)
+                * (seg_sessions["cart_value"] * PRODUCT_MARGIN_RATE + p - SHIPPING_COST_TO_MERCHANT)
+            ).mean()
             for p in prices
         ]
-        ax2.plot(prices, em_curves, label=seg.replace("_", " ").title(),
-                 color=seg_colors[seg], linewidth=2.2)
+        ax2.plot(
+            prices,
+            em_curves,
+            label=seg.replace("_", " ").title(),
+            color=seg_colors[seg],
+            linewidth=2.2,
+        )
 
     ax2.set_xlabel("Shipping price ($)")
     ax2.set_ylabel("Mean expected margin ($)")
@@ -231,10 +252,14 @@ def main(quick: bool = False) -> None:  # noqa: C901
     print("\n" + "=" * 60)
     print("Shipping Price Optimisation — Training Complete")
     print("=" * 60)
-    print(f"  Sessions:              {n_sessions:,}  (train={len(train_df):,} / test={len(test_df):,})")
+    print(
+        f"  Sessions:              {n_sessions:,}  (train={len(train_df):,} / test={len(test_df):,})"
+    )
     print(f"  Elasticity PR-AUC:     {pr_auc:.4f}  (random = {y_true.mean():.4f})")
-    print(f"  Margin improvement:    +{improvement_pct:.1f}%  vs flat-rate ${FLAT_RATE_OPTION.price:.2f}")
-    print(f"  Conversion delta:      {(opt_p - flat_p)*100:+.1f} pp")
+    print(
+        f"  Margin improvement:    +{improvement_pct:.1f}%  vs flat-rate ${FLAT_RATE_OPTION.price:.2f}"
+    )
+    print(f"  Conversion delta:      {(opt_p - flat_p) * 100:+.1f} pp")
     print(f"  Results saved to:      {RESULTS}")
     print("=" * 60)
 

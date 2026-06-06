@@ -35,7 +35,7 @@ SEGMENT_PARAMS: dict[str, dict] = {
     "sure_thing": {
         "weight": 0.25,
         "base_logit": 2.3,
-        "price_sensitivity": 0.06,   # barely affected by price
+        "price_sensitivity": 0.06,  # barely affected by price
         "cart_value_mean": 105.0,
         "cart_value_std": 55.0,
         "session_depth_mean": 12.0,
@@ -44,7 +44,7 @@ SEGMENT_PARAMS: dict[str, dict] = {
     "persuadable": {
         "weight": 0.30,
         "base_logit": 0.35,
-        "price_sensitivity": 0.28,   # very sensitive — free shipping converts them
+        "price_sensitivity": 0.28,  # very sensitive — free shipping converts them
         "cart_value_mean": 72.0,
         "cart_value_std": 40.0,
         "session_depth_mean": 9.0,
@@ -53,7 +53,7 @@ SEGMENT_PARAMS: dict[str, dict] = {
     "lost_cause": {
         "weight": 0.25,
         "base_logit": -2.7,
-        "price_sensitivity": 0.02,   # won't convert regardless
+        "price_sensitivity": 0.02,  # won't convert regardless
         "cart_value_mean": 58.0,
         "cart_value_std": 35.0,
         "session_depth_mean": 4.0,
@@ -139,9 +139,9 @@ def generate_shipping_dataset(
         cart_value[mask] = np.clip(
             rng.normal(params["cart_value_mean"], params["cart_value_std"], k), 15.0, 500.0
         )
-        session_depth[mask] = np.clip(
-            rng.poisson(params["session_depth_mean"], k), 1, 30
-        ).astype(float)
+        session_depth[mask] = np.clip(rng.poisson(params["session_depth_mean"], k), 1, 30).astype(
+            float
+        )
         is_returning[mask] = rng.random(k) < params["returning_prob"]
 
     n_items = np.clip(rng.poisson(3.0, n), 1, 10)
@@ -152,7 +152,9 @@ def generate_shipping_dataset(
     # f0: correlates with cart_value (normalised)
     f0 = (cart_value - cart_value.mean()) / (cart_value.std() + 1e-8) + rng.normal(0, 0.3, n)
     # f1: correlates with session_depth
-    f1 = (session_depth - session_depth.mean()) / (session_depth.std() + 1e-8) + rng.normal(0, 0.3, n)
+    f1 = (session_depth - session_depth.mean()) / (session_depth.std() + 1e-8) + rng.normal(
+        0, 0.3, n
+    )
     # f2: correlates with is_returning
     f2 = is_returning.astype(float) + rng.normal(0, 0.4, n)
     # f3–f5: noise

@@ -64,10 +64,23 @@ class TestSyntheticGenerator:
 
     def test_schema(self, small_df: pd.DataFrame) -> None:
         required = [
-            "session_id", "segment", "cart_value", "n_items", "is_returning",
-            "session_depth", "time_on_checkout", "device_mobile",
-            "f0", "f1", "f2", "f3", "f4", "f5",
-            "shipping_price", "converted", "cart_margin",
+            "session_id",
+            "segment",
+            "cart_value",
+            "n_items",
+            "is_returning",
+            "session_depth",
+            "time_on_checkout",
+            "device_mobile",
+            "f0",
+            "f1",
+            "f2",
+            "f3",
+            "f4",
+            "f5",
+            "shipping_price",
+            "converted",
+            "cart_margin",
         ]
         for col in required:
             assert col in small_df.columns, f"Missing column: {col}"
@@ -115,20 +128,24 @@ class TestElasticityModel:
         p = trained_model.predict_proba(small_df)
         assert p.shape == (len(small_df),)
 
-    def test_predict_proba_in_unit_interval(self, trained_model: object, small_df: pd.DataFrame) -> None:
+    def test_predict_proba_in_unit_interval(
+        self, trained_model: object, small_df: pd.DataFrame
+    ) -> None:
         p = trained_model.predict_proba(small_df)
         assert p.min() >= 0.0 and p.max() <= 1.0
 
-    def test_predict_at_price_counterfactual(self, trained_model: object, small_df: pd.DataFrame) -> None:
+    def test_predict_at_price_counterfactual(
+        self, trained_model: object, small_df: pd.DataFrame
+    ) -> None:
         """Predicted P(convert) at price=0 should exceed P(convert) at price=12.99."""
         p_free = trained_model.predict_at_price(small_df.head(500), 0.00).mean()
         p_exp = trained_model.predict_at_price(small_df.head(500), 12.99).mean()
         # Overall average: free should beat expensive (persuadables + sure_things dominate)
-        assert p_free > p_exp, (
-            f"Expected p_free ({p_free:.4f}) > p_expensive ({p_exp:.4f})"
-        )
+        assert p_free > p_exp, f"Expected p_free ({p_free:.4f}) > p_expensive ({p_exp:.4f})"
 
-    def test_price_curve_returns_dataframe(self, trained_model: object, small_df: pd.DataFrame) -> None:
+    def test_price_curve_returns_dataframe(
+        self, trained_model: object, small_df: pd.DataFrame
+    ) -> None:
         session = small_df.iloc[0]
         curve = trained_model.price_curve(session, PRICE_OPTIONS)
         assert isinstance(curve, pd.DataFrame)
@@ -148,7 +165,9 @@ class TestElasticityModel:
 
 
 class TestShippingPriceOptimizer:
-    def test_recommend_returns_valid_option(self, trained_model: object, small_df: pd.DataFrame) -> None:
+    def test_recommend_returns_valid_option(
+        self, trained_model: object, small_df: pd.DataFrame
+    ) -> None:
         opt = ShippingPriceOptimizer(trained_model)
         result = opt.recommend(small_df.iloc[0])
         valid_prices = {o.price for o in SHIPPING_OPTIONS}
@@ -177,16 +196,24 @@ class TestShippingPriceOptimizer:
         """Optimised expected margin should exceed the flat-rate baseline."""
         opt = ShippingPriceOptimizer(trained_model)
         policy_df = opt.compare_policies(small_df.head(1000))
-        flat_em = float(policy_df[policy_df["policy"].str.startswith("Flat")]["mean_expected_margin"].iloc[0])
-        opt_em = float(policy_df[policy_df["policy"].str.startswith("Opt")]["mean_expected_margin"].iloc[0])
+        flat_em = float(
+            policy_df[policy_df["policy"].str.startswith("Flat")]["mean_expected_margin"].iloc[0]
+        )
+        opt_em = float(
+            policy_df[policy_df["policy"].str.startswith("Opt")]["mean_expected_margin"].iloc[0]
+        )
         assert opt_em >= flat_em, f"Optimised EM {opt_em:.4f} should ≥ flat-rate {flat_em:.4f}"
 
-    def test_compare_policies_returns_all_four(self, trained_model: object, small_df: pd.DataFrame) -> None:
+    def test_compare_policies_returns_all_four(
+        self, trained_model: object, small_df: pd.DataFrame
+    ) -> None:
         opt = ShippingPriceOptimizer(trained_model)
         policy_df = opt.compare_policies(small_df.head(500))
         assert len(policy_df) == 4
 
-    def test_min_conversion_floor_respected(self, trained_model: object, small_df: pd.DataFrame) -> None:
+    def test_min_conversion_floor_respected(
+        self, trained_model: object, small_df: pd.DataFrame
+    ) -> None:
         """With a high conversion floor, the optimizer should never recommend a very expensive option."""
         opt = ShippingPriceOptimizer(trained_model, min_p_convert=0.60)
         # For a sure-thing session, the floor should still allow a recommendation

@@ -25,6 +25,7 @@ from .synthetic import PRODUCT_MARGIN_RATE, SHIPPING_COST_TO_MERCHANT
 
 # ── Shipping option catalogue ──────────────────────────────────────────────────
 
+
 @dataclass(frozen=True)
 class ShippingOption:
     """A single shipping tier available to show at checkout.
@@ -48,10 +49,10 @@ class ShippingOption:
 
 
 SHIPPING_OPTIONS: list[ShippingOption] = [
-    ShippingOption("Free Shipping", 0.00,  "5–7 days", "free"),
-    ShippingOption("Standard",      4.99,  "3–5 days", "standard"),
-    ShippingOption("Expedited",     7.99,  "2–3 days", "expedited"),
-    ShippingOption("Express",       12.99, "1 day",    "express"),
+    ShippingOption("Free Shipping", 0.00, "5–7 days", "free"),
+    ShippingOption("Standard", 4.99, "3–5 days", "standard"),
+    ShippingOption("Expedited", 7.99, "2–3 days", "expedited"),
+    ShippingOption("Express", 12.99, "1 day", "express"),
 ]
 
 FLAT_RATE_OPTION: ShippingOption = SHIPPING_OPTIONS[1]  # $4.99 Standard
@@ -120,7 +121,9 @@ class ShippingPriceOptimizer:
         rows: list[dict] = []
         for opt in self.options:
             p = float(self.elasticity_model.predict_at_price(session_df, opt.price)[0])
-            em = p * (session["cart_value"] * PRODUCT_MARGIN_RATE + opt.price - SHIPPING_COST_TO_MERCHANT)
+            em = p * (
+                session["cart_value"] * PRODUCT_MARGIN_RATE + opt.price - SHIPPING_COST_TO_MERCHANT
+            )
             rows.append(
                 {
                     "option": opt.name,
@@ -132,7 +135,11 @@ class ShippingPriceOptimizer:
             )
 
         breakdown = pd.DataFrame(rows)
-        eligible = breakdown if self.min_p_convert is None else breakdown[breakdown["p_convert"] >= self.min_p_convert]
+        eligible = (
+            breakdown
+            if self.min_p_convert is None
+            else breakdown[breakdown["p_convert"] >= self.min_p_convert]
+        )
         if eligible.empty:
             eligible = breakdown  # relax constraint if all options fail the floor
 
@@ -166,7 +173,11 @@ class ShippingPriceOptimizer:
 
         # ── Flat rate (always $4.99 Standard) ─────────────────────────────────
         p_flat = self.elasticity_model.predict_at_price(sessions, FLAT_RATE_OPTION.price)
-        em_flat = p_flat * (sessions["cart_value"] * PRODUCT_MARGIN_RATE + FLAT_RATE_OPTION.price - SHIPPING_COST_TO_MERCHANT)
+        em_flat = p_flat * (
+            sessions["cart_value"] * PRODUCT_MARGIN_RATE
+            + FLAT_RATE_OPTION.price
+            - SHIPPING_COST_TO_MERCHANT
+        )
         results.append(
             {
                 "policy": f"Flat rate (${FLAT_RATE_OPTION.price:.2f})",
@@ -178,7 +189,9 @@ class ShippingPriceOptimizer:
 
         # ── Always free shipping ───────────────────────────────────────────────
         p_free = self.elasticity_model.predict_at_price(sessions, 0.00)
-        em_free = p_free * (sessions["cart_value"] * PRODUCT_MARGIN_RATE - SHIPPING_COST_TO_MERCHANT)
+        em_free = p_free * (
+            sessions["cart_value"] * PRODUCT_MARGIN_RATE - SHIPPING_COST_TO_MERCHANT
+        )
         results.append(
             {
                 "policy": "Always free shipping",
@@ -191,7 +204,9 @@ class ShippingPriceOptimizer:
         # ── Always Express ($12.99) ────────────────────────────────────────────
         express = SHIPPING_OPTIONS[-1]
         p_exp = self.elasticity_model.predict_at_price(sessions, express.price)
-        em_exp = p_exp * (sessions["cart_value"] * PRODUCT_MARGIN_RATE + express.price - SHIPPING_COST_TO_MERCHANT)
+        em_exp = p_exp * (
+            sessions["cart_value"] * PRODUCT_MARGIN_RATE + express.price - SHIPPING_COST_TO_MERCHANT
+        )
         results.append(
             {
                 "policy": f"Always Express (${express.price:.2f})",
@@ -206,11 +221,13 @@ class ShippingPriceOptimizer:
         all_ps: list[np.ndarray] = []
         for opt in self.options:
             p_o = self.elasticity_model.predict_at_price(sessions, opt.price)
-            em_o = p_o * (sessions["cart_value"] * PRODUCT_MARGIN_RATE + opt.price - SHIPPING_COST_TO_MERCHANT)
+            em_o = p_o * (
+                sessions["cart_value"] * PRODUCT_MARGIN_RATE + opt.price - SHIPPING_COST_TO_MERCHANT
+            )
             all_ems.append(em_o)
             all_ps.append(p_o)
 
-        em_matrix = np.stack(all_ems, axis=1)   # (n, n_options)
+        em_matrix = np.stack(all_ems, axis=1)  # (n, n_options)
         p_matrix = np.stack(all_ps, axis=1)
         best_idx = em_matrix.argmax(axis=1)
         em_opt = em_matrix[np.arange(len(sessions)), best_idx]
@@ -243,7 +260,9 @@ class ShippingPriceOptimizer:
         all_ems: list[np.ndarray] = []
         for opt in self.options:
             p_o = self.elasticity_model.predict_at_price(sessions, opt.price)
-            em_o = p_o * (sessions["cart_value"] * PRODUCT_MARGIN_RATE + opt.price - SHIPPING_COST_TO_MERCHANT)
+            em_o = p_o * (
+                sessions["cart_value"] * PRODUCT_MARGIN_RATE + opt.price - SHIPPING_COST_TO_MERCHANT
+            )
             all_ems.append(em_o)
 
         em_matrix = np.stack(all_ems, axis=1)

@@ -38,7 +38,7 @@ SESSION_FEATURES: list[str] = [
     "f3",
     "f4",
     "f5",
-    "shipping_price",   # the key causal feature
+    "shipping_price",  # the key causal feature
 ]
 
 DEFAULT_LGBM_PARAMS: dict[str, Any] = {
@@ -118,9 +118,7 @@ class ConversionElasticityModel:
         X = self._prepare_x(df)
         return self._model.predict_proba(X)[:, 1]
 
-    def predict_at_price(
-        self, df: pd.DataFrame, price: float
-    ) -> np.ndarray:
+    def predict_at_price(self, df: pd.DataFrame, price: float) -> np.ndarray:
         """Return counterfactual P(convert) if shipping_price were set to ``price``.
 
         Parameters
@@ -139,9 +137,7 @@ class ConversionElasticityModel:
         df_cf["shipping_price"] = price
         return self.predict_proba(df_cf)
 
-    def price_curve(
-        self, session: pd.Series, prices: list[float]
-    ) -> pd.DataFrame:
+    def price_curve(self, session: pd.Series, prices: list[float]) -> pd.DataFrame:
         """Return P(convert) and expected margin at each price for one session.
 
         Parameters
@@ -161,7 +157,11 @@ class ConversionElasticityModel:
         session_df = pd.DataFrame([session] * len(prices)).reset_index(drop=True)
         session_df["shipping_price"] = prices
         p_vals = self.predict_proba(session_df)
-        margins = p_vals * (session["cart_value"] * PRODUCT_MARGIN_RATE + np.array(prices) - SHIPPING_COST_TO_MERCHANT)
+        margins = p_vals * (
+            session["cart_value"] * PRODUCT_MARGIN_RATE
+            + np.array(prices)
+            - SHIPPING_COST_TO_MERCHANT
+        )
         return pd.DataFrame({"price": prices, "p_convert": p_vals, "expected_margin": margins})
 
     # ── Persistence ────────────────────────────────────────────────────────────
