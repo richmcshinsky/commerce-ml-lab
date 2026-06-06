@@ -180,13 +180,16 @@ def generate_shipping_dataset(
     converted = rng.random(n) < p_convert
 
     # ── Derived fields ─────────────────────────────────────────────────────────
+    # Round cart_value first so margin is consistent with the stored (rounded)
+    # value — the optimizer and tests both derive margin from cart_value.round(2).
+    cart_value = cart_value.round(2)
     cart_margin = cart_value * PRODUCT_MARGIN_RATE
 
     return pd.DataFrame(
         {
             "session_id": [f"S{i:07d}" for i in range(n)],
             "segment": segments,
-            "cart_value": cart_value.round(2),
+            "cart_value": cart_value,
             "n_items": n_items,
             "is_returning": is_returning,
             "session_depth": session_depth.astype(int),
