@@ -55,13 +55,13 @@ with row2_l:
 with row2_r:
     with st.container(border=True):
         st.markdown("### 🚚 Shipping Optimisation")
-        st.markdown("**+33% expected margin** vs flat-rate · conversion rate maintained")
+        st.markdown("**+16.4% expected margin** vs flat-rate · conversion rate also improves (+1.3 pp)")
         st.divider()
         st.markdown(
             "Per-session shipping price selection using a causal elasticity model. "
             "Sure-things absorb a premium express rate. Persuadables convert with free shipping — "
             "and the order still profits after the shipping cost. "
-            "One flat rate is optimal for neither group."
+            "The result: more margin **and** higher conversion. One flat rate achieves neither."
         )
 
 st.divider()

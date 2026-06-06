@@ -182,9 +182,13 @@ class ConversionElasticityModel:
 
     # ── Helpers ────────────────────────────────────────────────────────────────
 
-    def _prepare_x(self, df: pd.DataFrame) -> np.ndarray:  # noqa: N802 (X is ML convention)
-        """Select and type-cast feature columns."""
+    def _prepare_x(self, df: pd.DataFrame) -> pd.DataFrame:  # noqa: N802 (X is ML convention)
+        """Select and type-cast feature columns.
+
+        Returns a DataFrame (not a numpy array) so that LightGBM retains
+        feature names and sklearn does not emit feature-name warnings.
+        """
         X = df[self.feature_cols_].copy()
         X["is_returning"] = X["is_returning"].astype(float)
         X["device_mobile"] = X["device_mobile"].astype(float)
-        return X.values.astype(float)
+        return X

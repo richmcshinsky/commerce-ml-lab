@@ -43,13 +43,11 @@ RESULTS = _HERE.parent.parent / "results"
 
 def main(quick: bool = False) -> None:  # noqa: C901
     """Train and evaluate the shipping price optimisation system."""
-    from shipping.elasticity import ConversionElasticityModel, DEFAULT_LGBM_PARAMS
-    from shipping.optimizer import ShippingPriceOptimizer, SHIPPING_OPTIONS, FLAT_RATE_OPTION
+    from shipping.elasticity import DEFAULT_LGBM_PARAMS, ConversionElasticityModel
+    from shipping.optimizer import FLAT_RATE_OPTION, SHIPPING_OPTIONS, ShippingPriceOptimizer
     from shipping.synthetic import (
-        PRICE_OPTIONS,
         PRODUCT_MARGIN_RATE,
         SEGMENT_NAMES,
-        SEGMENT_PARAMS,
         SHIPPING_COST_TO_MERCHANT,
         generate_shipping_dataset,
     )

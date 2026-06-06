@@ -78,7 +78,7 @@ Also supports a minimum conversion rate floor for conservative deployments.
 | Always free shipping | lower | highest |
 | **Flat rate ($4.99)** | **baseline** | **baseline** |
 | Always Express ($12.99) | lower | lowest |
-| **Optimised** | **+15–20% vs flat rate** | near-flat |
+| **Optimised** | **+16.4% vs flat rate** | **+1.3 pp** (also improves) |
 
 The optimised policy improves expected margin while keeping conversion rate approximately flat —
 because it is charging more only to sure-things (who convert regardless) and subsidising
