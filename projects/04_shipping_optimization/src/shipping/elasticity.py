@@ -22,7 +22,6 @@ from typing import Any
 import numpy as np
 import pandas as pd
 from sklearn.calibration import CalibratedClassifierCV
-from sklearn.preprocessing import LabelEncoder
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +73,7 @@ class ConversionElasticityModel:
 
     # ── Training ───────────────────────────────────────────────────────────────
 
-    def fit(self, df: pd.DataFrame) -> "ConversionElasticityModel":
+    def fit(self, df: pd.DataFrame) -> ConversionElasticityModel:
         """Fit the elasticity model on checkout session data.
 
         Parameters
@@ -90,7 +89,7 @@ class ConversionElasticityModel:
         """
         from lightgbm import LGBMClassifier
 
-        X = self._prepare_X(df)
+        X = self._prepare_x(df)
         y = df["converted"].astype(int).values
 
         base = LGBMClassifier(**self.lgbm_params)
@@ -116,7 +115,7 @@ class ConversionElasticityModel:
         """
         if self._model is None:
             raise RuntimeError("Model not fitted. Call fit() first.")
-        X = self._prepare_X(df)
+        X = self._prepare_x(df)
         return self._model.predict_proba(X)[:, 1]
 
     def predict_at_price(
@@ -174,7 +173,7 @@ class ConversionElasticityModel:
         logger.info("ConversionElasticityModel saved to %s.", path)
 
     @classmethod
-    def load(cls, path: Path) -> "ConversionElasticityModel":
+    def load(cls, path: Path) -> ConversionElasticityModel:
         """Load a pickled model from ``path``."""
         with open(path, "rb") as f:
             obj = pickle.load(f)
@@ -183,7 +182,7 @@ class ConversionElasticityModel:
 
     # ── Helpers ────────────────────────────────────────────────────────────────
 
-    def _prepare_X(self, df: pd.DataFrame) -> np.ndarray:
+    def _prepare_x(self, df: pd.DataFrame) -> np.ndarray:  # noqa: N802 (X is ML convention)
         """Select and type-cast feature columns."""
         X = df[self.feature_cols_].copy()
         X["is_returning"] = X["is_returning"].astype(float)

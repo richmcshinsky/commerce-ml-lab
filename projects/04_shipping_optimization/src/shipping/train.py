@@ -154,7 +154,6 @@ def main(quick: bool = False) -> None:  # noqa: C901
 
     # Chart 2: Expected margin curves
     ax2 = axes[1]
-    mean_cart = df["cart_value"].mean()
     for seg in SEGMENT_NAMES:
         seg_sessions = test_df[test_df["segment"] == seg].head(200)
         if seg_sessions.empty:
@@ -214,7 +213,7 @@ def main(quick: bool = False) -> None:  # noqa: C901
         option_colors = ["#2E7D32", "#1565C0", "#E65100", "#7B1FA2"]
         bottom = np.zeros(len(seg_price_df))
 
-        for opt_name, col in zip(option_names, option_colors):
+        for opt_name, col in zip(option_names, option_colors, strict=False):
             if opt_name not in seg_price_df.columns:
                 continue
             vals = seg_price_df[opt_name].values

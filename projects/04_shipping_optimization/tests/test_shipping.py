@@ -30,7 +30,6 @@ from shipping.synthetic import (
     generate_shipping_dataset,
 )
 from shipping.optimizer import (
-    FLAT_RATE_OPTION,
     SHIPPING_OPTIONS,
     ShippingPriceOptimizer,
 )
@@ -159,7 +158,6 @@ class TestShippingPriceOptimizer:
         self, trained_model: object, small_df: pd.DataFrame
     ) -> None:
         """On average, sure-things should be assigned a higher shipping price than persuadables."""
-        opt = ShippingPriceOptimizer(trained_model)
         all_ems = [
             trained_model.predict_at_price(small_df, o.price)
             * (small_df["cart_value"] * PRODUCT_MARGIN_RATE + o.price - SHIPPING_COST_TO_MERCHANT)
