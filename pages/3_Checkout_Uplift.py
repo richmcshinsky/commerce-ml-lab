@@ -12,11 +12,13 @@ import streamlit as st
 sys.path.insert(0, str(Path(__file__).parents[1]))
 from utils import ROOT, load_uplift_data, qini_coeff, qini_curve
 
-st.title("🎯 Checkout Uplift Modelling")
+st.title("🎯 Checkout Uplift")
 st.markdown(
-    "Propensity models predict who will convert. Uplift models predict who you can **influence**. "
-    "These are not the same population — and targeting the wrong one wastes budget on sure-things "
-    "who would have converted anyway."
+    "**The propensity trap:** a standard intent model finds users likely to convert. "
+    "But likely-to-convert includes sure-things who convert regardless of your intervention — "
+    "targeting them with a discount just gives away margin. "
+    "Uplift modelling estimates who actually changes behaviour *because of* the intervention. "
+    "This project shows the difference, and why it matters for every discount budget decision."
 )
 
 df = load_uplift_data()

@@ -20,10 +20,11 @@ with st.sidebar:
 
 pg = st.navigation(
     [
-        st.Page("pages/home.py",                  title="Home",                  icon="🏠", default=True),
-        st.Page("pages/1_Demand_Forecasting.py",  title="Demand Forecasting",    icon="📦"),
-        st.Page("pages/2_Returns_Intelligence.py", title="Returns Intelligence",  icon="🔁"),
-        st.Page("pages/3_Checkout_Uplift.py",     title="Checkout Uplift",       icon="🎯"),
+        st.Page("pages/home.py",                    title="Home",                    icon="🏠", default=True),
+        st.Page("pages/1_Demand_Forecasting.py",    title="Demand Forecasting",      icon="📦"),
+        st.Page("pages/2_Returns_Intelligence.py",  title="Returns Intelligence",    icon="🔁"),
+        st.Page("pages/3_Checkout_Uplift.py",       title="Checkout Uplift",         icon="🎯"),
+        st.Page("pages/4_Shipping_Optimization.py", title="Shipping Optimisation",   icon="🚚"),
     ]
 )
 pg.run()

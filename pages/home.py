@@ -4,62 +4,72 @@ from __future__ import annotations
 import streamlit as st
 
 st.title("Commerce ML Lab")
-st.markdown("**Richard McShinsky** · End-to-end ML for e-commerce operations")
-st.divider()
+st.markdown(
+    "**Richard McShinsky** · [GitHub](https://github.com/richmcshinsky/commerce-ml-lab)"
+)
 
 st.markdown(
-    "Each project connects a model to a specific **operational decision** — "
-    "reorder now vs. hold, approve vs. flag, who to target with a discount. "
-    "Predictions without policies don't move metrics."
+    "Four end-to-end ML systems built on one principle: **every model connects to a specific "
+    "operational decision.** Predictions that don't change behaviour don't create value."
 )
 
 st.divider()
 
-# ── Project cards ──────────────────────────────────────────────────────────────
-col1, col2, col3 = st.columns(3, gap="large")
+# ── 2×2 project cards ──────────────────────────────────────────────────────────
+row1_l, row1_r = st.columns(2, gap="large")
+row2_l, row2_r = st.columns(2, gap="large")
 
-with col1:
+with row1_l:
     with st.container(border=True):
-        st.markdown("#### 📦 Demand Forecasting")
-        ma, mb = st.columns(2)
-        ma.metric("WMAPE gain", "+19%", help="0.058 vs 0.072 seasonal naive · M5 Walmart CA_1 · 28-day horizon")
-        mb.metric("SKUs", "3,049", help="One global model — no per-SKU fitting")
+        st.markdown("### 📦 Demand Forecasting")
+        st.markdown("**+19% accuracy** over seasonal naive · 3,049 SKUs · 28-day horizon")
+        st.divider()
         st.markdown(
-            "One LightGBM model trained globally feeds an **(s, S) reorder policy**. "
-            "80% prediction intervals from quantile regression size safety stock directly — "
-            "connecting the forecast to an inventory action."
+            "A single LightGBM model trained across all SKUs feeds a live **(s, S) reorder policy**. "
+            "The model's 80% prediction intervals size safety stock directly — "
+            "turning the forecast into a concrete 'reorder now or hold' decision for every SKU."
         )
 
-with col2:
+with row1_r:
     with st.container(border=True):
-        st.markdown("#### 🔁 Returns Intelligence")
-        ma, mb = st.columns(2)
-        ma.metric("Fraud PR-AUC", "0.560", help="23× random baseline (0.024) — graph features detect address-sharing rings")
-        mb.metric("Rule coverage", "~70%", help="Returns resolved by heuristic layer instantly, no ML needed")
+        st.markdown("### 🔁 Returns Intelligence")
+        st.markdown("**Fraud PR-AUC 0.560** (23× random baseline) · ~70% of returns resolved by rules alone")
+        st.divider()
         st.markdown(
-            "Three models, one schema: fraud detection, return likelihood, and exchange recommendations. "
-            "**Graph features** — shared addresses, payment hash rings — expose organised fraud "
-            "that behavioural signals miss entirely."
+            "Three models share one data schema: fraud detection, return likelihood, and exchange recommendations. "
+            "Graph features — shared delivery addresses, payment hash rings — expose organised fraud rings "
+            "that look individually normal on every other signal."
         )
 
-with col3:
+with row2_l:
     with st.container(border=True):
-        st.markdown("#### 🎯 Checkout Uplift")
-        ma, mb = st.columns(2)
-        ma.metric("Persuadable CATE", "+12.3%", help="True treatment effect for the persuadable segment — the right population to target")
-        mb.metric("Sure-thing CATE", "+1.0%", help="Sure-things have 15.9% propensity but near-zero CATE — propensity targets them, wasting budget")
+        st.markdown("### 🎯 Checkout Uplift")
+        st.markdown("**Persuadables: +12.3% treatment effect** · Sure-things: +1.0% despite 15.9% propensity")
+        st.divider()
         st.markdown(
-            "Propensity models find who will convert. Uplift models find who you can **influence**. "
-            "Sure-things have the highest propensity (15.9%) but near-zero CATE (+1.0%) — "
-            "propensity targeting spends budget on conversions that would have happened anyway."
+            "Propensity scores find who will convert. Uplift models find who you can actually **influence**. "
+            "Sure-things have the highest propensity but near-zero treatment effect — "
+            "targeting them wastes every discount dollar on sales that would have happened anyway."
+        )
+
+with row2_r:
+    with st.container(border=True):
+        st.markdown("### 🚚 Shipping Optimisation")
+        st.markdown("**+33% expected margin** vs flat-rate · conversion rate maintained")
+        st.divider()
+        st.markdown(
+            "Per-session shipping price selection using a causal elasticity model. "
+            "Sure-things absorb a premium express rate. Persuadables convert with free shipping — "
+            "and the order still profits after the shipping cost. "
+            "One flat rate is optimal for neither group."
         )
 
 st.divider()
 
 # ── Principles ─────────────────────────────────────────────────────────────────
-st.markdown("#### Four principles applied across every project")
+st.markdown("#### Principles applied across every project")
 p1, p2, p3, p4 = st.columns(4)
-p1.info("**Baseline first**\n\nEvery model earns its complexity vs. the simplest possible alternative.")
-p2.info("**Predictions → policies**\n\nForecasts feed reorder rules. Scores feed approval thresholds.")
-p3.info("**Cost-aware thresholds**\n\nDecision cutoffs tie to stated business costs, not arbitrary F1 targets.")
-p4.info("**Honest limitations**\n\nEvery project carries a limitations section and a future-work list.")
+p1.info("**Baseline first**\n\nEvery technique proves itself against the simplest possible alternative.")
+p2.info("**Predictions → policies**\n\nForecasts feed reorder rules. Scores feed fraud thresholds. CATE estimates feed pricing decisions.")
+p3.info("**Cost-aware**\n\nDecision cutoffs tie to stated business costs, not F1 targets chosen without context.")
+p4.info("**Honest limits**\n\nEvery project has a limitations section. Synthetic data is always labelled as such.")

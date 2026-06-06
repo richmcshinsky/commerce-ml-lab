@@ -11,10 +11,11 @@ import streamlit as st
 sys.path.insert(0, str(Path(__file__).parents[1]))
 from utils import ROOT, load_forecast_metrics, load_inventory_policies
 
-st.title("📦 Demand Forecasting & Inventory Optimization")
+st.title("📦 Demand Forecasting")
 st.markdown(
-    "A single global LightGBM model across **3,049 SKUs** translates sales history into "
-    "inventory reorder decisions — no per-SKU models, no cold-start problem."
+    "The output of a demand forecast isn't a number — it's a decision: **reorder now, or hold?** "
+    "This project trains one LightGBM model across all 3,049 SKUs and connects its output directly "
+    "to a live (s, S) reorder policy. The forecast only matters when it changes what you do."
 )
 
 policies = load_inventory_policies()

@@ -1,7 +1,7 @@
 [project]
 name = "commerce-ml"
 version = "0.1.0"
-description = "Commerce ML portfolio: demand forecasting, returns intelligence, and checkout intent"
+description = "Commerce ML portfolio: demand forecasting, returns intelligence, checkout intent, and shipping price optimisation"
 requires-python = ">=3.11"
 dependencies = [
     "numpy>=1.26",

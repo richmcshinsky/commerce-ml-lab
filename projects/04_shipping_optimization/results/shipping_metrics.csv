@@ -1,0 +1,10 @@
+metric,value
+elasticity_pr_auc,0.7257
+random_baseline_pr_auc,0.4367
+margin_improvement_pct,16.4
+flat_rate_mean_conversion,0.431
+optimised_mean_conversion,0.4443
+flat_rate_mean_em,16.555
+optimised_mean_em,19.2708
+n_train,48000.0
+n_test,12000.0

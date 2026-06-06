@@ -1,7 +1,7 @@
 .PHONY: install install-pip data data-m5 data-criteo data-synthetic \
         lint format typecheck test ci \
-        train-forecast train-returns train-intent \
-        serve-forecast serve-returns clean
+        train-forecast train-returns train-intent train-shipping \
+        serve-forecast serve-returns serve-shipping clean
 
 # ── Python — works with uv (preferred) or plain conda/pip ────────────────────
 # Override: PYTHON=/path/to/python make data-m5
@@ -58,13 +58,16 @@ ci: lint typecheck test
 # ── Training ─────────────────────────────────────────────────────────────────
 
 train-forecast:
-	cd projects/01_demand_forecasting && uv run python -m forecasting.train
+	cd projects/01_demand_forecasting && PYTHONPATH=src uv run python -m forecasting.train
 
 train-returns:
-	cd projects/02_returns_intelligence && uv run python -m returns.train
+	cd projects/02_returns_intelligence && PYTHONPATH=src uv run python -m returns.train
 
 train-intent:
-	cd projects/03_checkout_intent && uv run python -m intent.train
+	cd projects/03_checkout_intent && PYTHONPATH=src uv run python -m intent.train
+
+train-shipping:
+	cd projects/04_shipping_optimization && PYTHONPATH=src uv run python -m shipping.train
 
 # ── Serving ──────────────────────────────────────────────────────────────────
 
@@ -73,6 +76,9 @@ serve-forecast:
 
 serve-returns:
 	cd projects/02_returns_intelligence && uv run uvicorn api.main:app --reload --port 8002
+
+serve-shipping:
+	cd projects/04_shipping_optimization && uv run uvicorn api.main:app --reload --port 8003
 
 # ── Cleanup ───────────────────────────────────────────────────────────────────
 

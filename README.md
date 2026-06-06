@@ -3,9 +3,9 @@
 [![CI](https://github.com/richmcshinsky/commerce-ml-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/richmcshinsky/commerce-ml-lab/actions/workflows/ci.yml)
 [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://richmcshinsky-commerce-ml-lab.streamlit.app)
 
-A focused ML portfolio covering the three problem areas at the intersection of
+A focused ML portfolio covering four problem areas at the intersection of
 e-commerce operations and machine learning: demand forecasting, returns
-intelligence, and checkout intent optimisation.
+intelligence, checkout intent optimisation, and shipping price optimisation.
 
 Built as a working demonstration of how I think about commerce ML problems
 end-to-end — from framing and baselines through to production-ready code and
@@ -20,6 +20,7 @@ inventory/business decision layers.
 | 01 | [Demand Forecasting](projects/01_demand_forecasting/) | Given sales history and supply chain lead times, when and how much should you reorder? | M5 (Walmart, Kaggle) | [📓 report](projects/01_demand_forecasting/report.ipynb) | ✅ Complete — WMAPE 0.058, 19% vs seasonal naive; (s,S) policy per SKU |
 | 02 | [Returns Intelligence](projects/02_returns_intelligence/) | Return likelihood scoring, fraud/abuse detection, and exchange recommendations — three models, one data schema | Synthetic (generated) | [📓 report](projects/02_returns_intelligence/report.ipynb) | ✅ Complete — Fraud PR-AUC 0.560 (23× random); graph features detect rings; cost-aware threshold |
 | 03 | [Checkout Intent & Uplift](projects/03_checkout_intent/) | Session behaviour predicts checkout probability; uplift modelling identifies who actually benefits from an intervention | Criteo Uplift v2 | [📓 report](projects/03_checkout_intent/report.ipynb) | ✅ Complete — T/S-learner CATE; segment decomposition shows sure-things (15.9% propensity, +1.0% CATE) vs persuadables (+12.3% CATE) |
+| 04 | [Shipping Price Optimisation](projects/04_shipping_optimization/) | Which shipping option to show and at what price to maximise margin without hurting conversion — per checkout session | Synthetic A/B test (generated) | — | ✅ Complete — causal elasticity model; per-session optimisation; +33% expected margin vs flat rate |
 
 ---
 
@@ -73,6 +74,22 @@ commerce-ml-lab/
 
 ---
 
+## Interactive demo
+
+The portfolio app is live on Streamlit Cloud — no setup required:
+
+**[richmcshinsky-commerce-ml-lab.streamlit.app](https://richmcshinsky-commerce-ml-lab.streamlit.app)**
+
+To run locally:
+
+```bash
+streamlit run streamlit_app.py
+```
+
+All result data (parquets, CSVs, charts) is committed to the repo, so every page loads immediately without running training first.
+
+---
+
 ## Quickstart
 
 ```bash
@@ -87,15 +104,17 @@ uv sync --all-extras
 make data-criteo          # ~700 MB, no auth required
 make data-m5              # requires Kaggle account + M5 terms accepted
 
-# 4. Generate synthetic returns data
-make data-synthetic
+# 4. Generate synthetic data and train all models
+make data-synthetic       # returns intelligence synthetic data
+make train-returns        # returns intelligence models
+make train-shipping       # shipping price optimisation model (no download required)
 
 # 5. Run tests
 make test
 
-# 6. Serve the returns API locally
-make serve-returns
-# Open http://localhost:8002/docs
+# 6. Serve APIs locally
+make serve-returns        # http://localhost:8002/docs
+make serve-shipping       # http://localhost:8003/docs
 ```
 
 ---

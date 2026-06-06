@@ -12,8 +12,9 @@ from utils import EXCHANGE_RULES, ROOT, load_returns_data, score_return
 
 st.title("🔁 Returns Intelligence")
 st.markdown(
-    "Three questions answered from one dataset: **Will this order be returned?** "
-    "**Is this return fraudulent?** **What should we offer in exchange?**"
+    "Three questions, one dataset: **Will this order be returned? Is this return fraudulent? "
+    "What should we offer instead?** Three models share one data schema — "
+    "the same architecture a production returns platform would actually ship."
 )
 
 customers, orders, returns = load_returns_data()
